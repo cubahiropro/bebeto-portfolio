@@ -22,7 +22,7 @@ const testimonials = getTestimonials(lang);
           </figure>
         ))}
       </div>
-      <div class="dots" role="tablist" aria-label={t(lang, 'testi.choose')}>
+      <div class="dots" role="group" aria-label={t(lang, 'testi.choose')}>
         {testimonials.map((x, i) => <button type="button" class={i === 0 ? 'on' : ''} aria-label={`${t(lang, 'testi.show')} ${x.name}`} data-i={i}></button>)}
       </div>
     </div>

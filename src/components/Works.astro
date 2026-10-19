@@ -10,13 +10,13 @@ const list = group ? all.filter((p) => p.group === group) : all;
 ---
 <div class={carousel ? 'portfolio-wrap' : 'wrap'} data-carousel={carousel ? '' : undefined}>
   <div class={carousel ? 'track' : 'grid-3'}>
-    {list.map((p) => (
-      <a class="item" href={link(lang, `/portfolio/${p.slug}`)} draggable="false" aria-label={`${lang === 'fr' ? 'Voir' : 'View'} ${p.title}`}>
+    {list.map((p, idx) => (
+      <a class="item" href={link(lang, `/portfolio/${p.slug}`)} draggable="false">
         <div class="img-block">
           <div class="wrapper-img">
             <div class="stage">
               {p.images.length
-                ? <img class={"art" in p && p.art ? "full" : ""} src={projectImage(p.images[0])} alt={`${p.title} preview`} loading="lazy" draggable="false" />
+                ? <img class={"art" in p && p.art ? "full" : ""} src={projectImage(p.images[0])} alt={`${p.title} preview`} loading={idx === 0 && !carousel ? 'eager' : 'lazy'} draggable="false" />
                 : <iframe src={p.live} title={`${p.title} live preview`} loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>}
             </div>
           </div>

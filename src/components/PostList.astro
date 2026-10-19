@@ -16,7 +16,7 @@ const fmt = (d: Date) => ({
     const d = fmt(p.data.date);
     return (
       <div class={`blog-row${i % 2 === 1 ? ' flip' : ''}`}>
-        <a class="img" href={link(lang, `/blog/${p.slug}`)}><span><img src={p.data.image} alt="" loading="lazy" /></span></a>
+        <a class="img" aria-hidden="true" tabindex="-1" href={link(lang, `/blog/${p.slug}`)}><span><img src={p.data.image} alt="" loading="lazy" /></span></a>
         <div class="content">
           <div class="date"><h1>{d.day}</h1><h6>{d.my}</h6></div>
           <div class="cont">

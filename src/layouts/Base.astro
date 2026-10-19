@@ -80,8 +80,14 @@ const frHref = lang === 'fr' ? here : otherLangPath('en', here);
       const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
       const split = (el: HTMLElement) => {
         const text = (el.textContent || '').trim();
-        el.setAttribute('aria-label', text);
         el.textContent = '';
+        if (/^H[1-6]$/.test(el.tagName)) el.setAttribute('aria-label', text);
+        else {
+          const sr = document.createElement('span');
+          sr.className = 'sr-only';
+          sr.textContent = text;
+          el.appendChild(sr);
+        }
         let i = 0;
         const words = text.split(/\s+/);
         words.forEach((w, wi) => {

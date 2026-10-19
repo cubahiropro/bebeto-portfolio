@@ -2,31 +2,15 @@
 // GitHub contributions calendar, drawn at build time (no third-party script runs in the visitor's browser).
 // Data comes from a public contributions API; the last good result is cached in src/data/github-contributions.json
 // so a build without internet still shows the table. Rebuild the site to refresh it.
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import net from 'node:net';
-net.setDefaultAutoSelectFamilyAttemptTimeout(500); // some networks stall on IPv6; try the next address sooner
 import SectionHead from './SectionHead.astro';
 import { langOf, t, dateLocale } from '../i18n';
+import { GITHUB_USER as USER, getContributionDays, sumContributions } from '../lib/github';
+import type { Day } from '../lib/github';
 const lang = langOf(Astro.url);
 const loc = dateLocale(lang);
 
-const USER = 'cubahiropro';
-const CACHE = join(process.cwd(), 'src/data/github-contributions.json'); // project root, not the build output folder
-
-type Day = { date: string; count: number; level: number };
-let data: { total: Record<string, number>; contributions: Day[] } | null = null;
-try {
-  const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${USER}?y=last`, { signal: AbortSignal.timeout(10000) });
-  if (res.ok) {
-    data = await res.json();
-    writeFileSync(CACHE, JSON.stringify(data));
-  }
-} catch {}
-if (!data && existsSync(CACHE)) data = JSON.parse(readFileSync(CACHE, 'utf8'));
-
-const days: Day[] = data?.contributions ?? [];
-const total = days.reduce((n, d) => n + d.count, 0);
+const days: Day[] = await getContributionDays();
+const total = sumContributions(days);
 
 // Arrange days into week columns (Sunday first), with blank cells before the first day.
 const weeks: (Day | null)[][] = [];

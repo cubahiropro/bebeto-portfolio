@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Services from '../components/Services.astro';
+import ProofStrip from '../components/ProofStrip.astro';
 import Stack from '../components/Stack.astro';
 import Works from '../components/Works.astro';
 import PostList from '../components/PostList.astro';
@@ -39,12 +40,24 @@ const site = getSite(lang);
     </div>
   </section>
 
+  <ProofStrip />
+
+  <section style="padding-bottom:0">
+    <div class="wrap">
+      <SectionHead eyebrow={t(lang, 'home.work.eyebrow')} title={t(lang, 'home.work.title')} text={t(lang, 'home.work.text')} />
+    </div>
+    <Works carousel />
+    <div class="more"><a class="btn-link auto" href={link(lang, '/portfolio')}><span>{t(lang, 'home.work.all')}</span></a></div>
+  </section>
+
   <section>
     <div class="wrap">
       <SectionHead eyebrow={t(lang, 'home.services.eyebrow')} title={t(lang, 'home.services.title')} text={site.bio} />
-      <Services />
+      <Services only={[0, 1, 3]} />
+      <div class="more" style="padding-top:40px"><a class="btn-link auto" href={link(lang, '/services')}><span>{t(lang, 'home.services.all')}</span></a></div>
     </div>
   </section>
+
 
   <section class="future">
     <div class="wrap">
@@ -60,18 +73,11 @@ const site = getSite(lang);
     </div>
   </section>
 
-  <section style="padding-bottom:0">
-    <div class="wrap">
-      <SectionHead eyebrow={t(lang, 'home.work.eyebrow')} title={t(lang, 'home.work.title')} text={t(lang, 'home.work.text')} />
-    </div>
-    <Works carousel />
-    <div class="more"><a class="btn-link auto" href={link(lang, '/portfolio')}><span>{t(lang, 'home.work.all')}</span></a></div>
-  </section>
-
   <section>
     <div class="wrap">
       <SectionHead eyebrow={t(lang, 'home.news.eyebrow')} title={t(lang, 'home.news.title')} />
-      <PostList limit={2} />
+      <PostList limit={1} />
+      <div class="more" style="padding-top:10px"><a class="btn-link auto" href={link(lang, '/blog')}><span>{t(lang, 'home.news.all')}</span></a></div>
     </div>
   </section>
 

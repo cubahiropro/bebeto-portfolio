@@ -4,7 +4,7 @@
   --white: #ffffff;      /* surfaces: header, footer, menu, inputs */
   --ink: #18191d;        /* headings */
   --dark: #24252b;
-  --text: #868a9b;
+  --text: #646a7e;      /* 4.9:1 on the page, 5.4:1 on white: readable in sunlight */
   --line: #e4e6ec;
   --card: #ffffff;       /* white cards (services, testimonial) */
   --card-ink: #18191d;
@@ -23,6 +23,7 @@
   --white: #212228;
   --ink: #ffffff;
   --line: #2e3037;
+  --text: #9498a8;
   --tile: #101114;
   --tile-a: #2c2e35;
   --tile-b: #131417;
@@ -457,6 +458,17 @@ body.menu-open .theme { background: var(--bg); }
 .tl-list li { position: relative; padding-left: 22px; margin-bottom: 8px; }
 .tl-list li::before { content: ''; position: absolute; left: 4px; top: .75em; width: 6px; height: 6px; border-radius: 50%; background: var(--text); }
 
+/* proof strip under the hero */
+.proof-sec { padding: 0 0 20px; }
+.proof { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 2px solid var(--line); border-bottom: 2px solid var(--line); }
+.proof li { border-left: 2px solid var(--line); }
+.proof li:first-child { border-left: 0; }
+.proof a, .proof li > div { display: block; padding: 28px 22px; height: 100%; color: inherit; transition: background .3s; }
+.proof li:first-child a, .proof li:first-child > div { padding-left: 0; }
+.proof a:hover { background: var(--white); }
+.proof b { display: block; overflow-wrap: anywhere; font-size: 38px; line-height: 1.1; font-weight: 800; color: var(--ink); margin-bottom: 8px; letter-spacing: -.01em; }
+.proof span { display: block; font-size: 14px; line-height: 1.5; }
+
 /* stack chips */
 .stack-row { display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: start; padding: 16px 0; border-top: 2px solid var(--line); }
 .stack-row:last-child { border-bottom: 2px solid var(--line); }
@@ -680,3 +692,15 @@ input, textarea, select { font-size: 16px; } /* 16px stops iOS from zooming into
   section.first, .portfolio-page { padding-top: 120px; }
   .mbar { display: none; }
 }
+
+@media (max-width: 767px) {
+  .proof { grid-template-columns: 1fr 1fr; }
+  .proof li:nth-child(3) { border-left: 0; }
+  .proof li:nth-child(n+3) { border-top: 2px solid var(--line); }
+  .proof li:first-child a, .proof li:first-child > div { padding-left: 22px; }
+  .proof a, .proof li > div { padding: 22px 16px; }
+  .proof li:nth-child(odd) a, .proof li:nth-child(odd) > div { padding-left: 0; }
+  .proof b { font-size: 30px; }
+  .proof span { font-size: 13px; }
+}
+@media (max-width: 380px) { .proof b { font-size: 26px; } }

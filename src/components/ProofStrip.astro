@@ -1,0 +1,46 @@
+---
+// Four facts right under the hero: the first things a client or recruiter wants to know.
+import { site } from '../data/site';
+import { getShipped } from '../i18n/data';
+import { getContributionDays, sumContributions } from '../lib/github';
+import { langOf, link, t, dateLocale } from '../i18n';
+const lang = langOf(Astro.url);
+const loc = dateLocale(lang);
+const shipped = getShipped(lang).length;
+const total = sumContributions(await getContributionDays());
+const endpoint = import.meta.env.PUBLIC_GITHUB_CONTRIB_URL ?? '';
+const fmt = (n: number) => n.toLocaleString(loc);
+---
+<section class="proof-sec" id="proof-root" data-endpoint={endpoint} data-loc={loc}>
+  <div class="wrap">
+    <ul class="proof">
+      <li class="fade-up">
+        <a href={`${link(lang, '/portfolio')}#shipped`}><b>{shipped}</b><span>{t(lang, 'proof.shipped')}</span></a>
+      </li>
+      <li class="fade-up" style="--d:.1s">
+        <div><b id="proof-gh">{total ? fmt(total) : '—'}</b><span>{t(lang, 'proof.github')}</span></div>
+      </li>
+      <li class="fade-up" style="--d:.2s">
+        <div><b>MAGIS</b><span>{t(lang, 'proof.work')}</span></div>
+      </li>
+      <li class="fade-up" style="--d:.3s">
+        <a href={link(lang, '/contact')}><b>{t(lang, 'proof.openValue')}</b><span>{t(lang, 'proof.openLabel')}</span></a>
+      </li>
+    </ul>
+  </div>
+</section>
+<script>
+  // Keep the GitHub number live (same source as the activity calendar on the resume page).
+  const root = document.getElementById('proof-root');
+  const out = document.getElementById('proof-gh');
+  if (root && out) {
+    const endpoint = root.dataset.endpoint || 'https://github-contributions-api.jogruber.de/v4/cubahiropro?y=last';
+    fetch(endpoint, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const days: { count: number }[] | undefined = d?.contributions;
+        if (days?.length) out.textContent = days.reduce((n, x) => n + x.count, 0).toLocaleString(root.dataset.loc);
+      })
+      .catch(() => {});
+  }
+</script>

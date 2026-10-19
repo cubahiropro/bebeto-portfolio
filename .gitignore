@@ -1,0 +1,24 @@
+# build output and dependencies
+node_modules/
+dist/
+.astro/
+
+# secrets and local settings
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# --- Kept out of the public repo on purpose ---
+# The PDF CV lists a reference's phone number and email. Add a version without them
+# (or host the CV elsewhere) before committing it.
+public/cv.pdf
+/NIYERA B CV.pdf
+# Original photos dropped in the project root; the site uses the copies in public/images
+/image *.jpeg

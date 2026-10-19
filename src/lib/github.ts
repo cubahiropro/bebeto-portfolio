@@ -18,7 +18,7 @@ async function load(): Promise<Day[]> {
     const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${GITHUB_USER}?y=last`, { signal: AbortSignal.timeout(10000) });
     if (res.ok) {
       data = await res.json();
-      writeFileSync(CACHE, JSON.stringify(data));
+      if (import.meta.env.PROD) writeFileSync(CACHE, JSON.stringify(data)); // only builds refresh the snapshot, so `npm run dev` never dirties git
     }
   } catch {}
   if (!data && existsSync(CACHE)) data = JSON.parse(readFileSync(CACHE, 'utf8'));

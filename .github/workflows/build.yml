@@ -1,0 +1,33 @@
+# Builds the site on every pull request and every push to main.
+# A pull request that does not build cannot be merged once branch protection requires this check.
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the site (English and French)
+        run: npm run build
+
+      - name: Check that both languages were generated
+        run: |
+          test -f dist/index.html
+          test -f dist/fr/index.html
+          echo "pages built: $(find dist -name '*.html' | wc -l)"

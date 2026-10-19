@@ -18,7 +18,8 @@ export const fr = {
   ],
 
   experience: [
-    { period: 'Sept. 2025 - Aujourd’hui', title: 'Employé, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Je travaille avec l’équipe MAGIS sur les plateformes MAGIS ERP et iHela Ryanje.' },
+    { period: 'Oct. 2025 - Aujourd’hui', title: 'Designer UI/UX, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Je conçois des interfaces et des expériences utilisateur pour les plateformes de l’équipe MAGIS.' },
+    { period: 'Sept. 2025', title: 'Développeur front-end, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Développeur front-end sur la plateforme de banque en ligne pendant un mois, mon premier poste après avoir rejoint l’équipe.' },
     { period: 'Juin - août 2025', title: 'Stage professionnel, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Stage professionnel en développement logiciel avec l’équipe MAGIS. Il a débouché sur un emploi.' },
     { period: 'Avril - mai 2025', title: 'Stage académique, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Stage académique en informatique chez MAGIS-ERP.' },
     { period: '2021 - Aujourd’hui', title: 'AYLF (Africa Leadership Forum)', place: 'Universités', text: 'Organisation de jeunes leaders dans les universités.' },
@@ -35,7 +36,7 @@ export const fr = {
   ],
 
   glance: {
-    now: 'En poste chez MAGIS Digital Solutions',
+    now: 'Designer UI/UX chez MAGIS Digital Solutions',
     before: 'Étudiant en génie logiciel, Université du Lac Tanganyika (2021 - 2024)',
     award: '',
   },
@@ -102,7 +103,7 @@ export const fr = {
       category: 'Fintech',
       tagline: 'La plateforme de services financiers numériques d’iHela Credit Union, sur le web et le mobile.',
       forWho: 'Les membres et le personnel d’iHela Credit Union au Burundi.',
-      did: 'J’ai contribué à la plateforme au sein de l’équipe MAGIS qui la développe, d’abord comme stagiaire puis comme employé.',
+      did: 'J’ai contribué au sein de l’équipe MAGIS qui la développe : développement front-end sur la plateforme de banque en ligne, puis design UI/UX.',
       built: 'La plateforme MAGIS existante de l’équipe',
       result: 'Les membres gèrent comptes, transferts, retraits, paiements et clubs d’épargne depuis une seule application.',
     },
@@ -110,7 +111,7 @@ export const fr = {
       category: 'ERP',
       tagline: 'MAGIS ERP, la plateforme qui aide les organisations à gérer et développer leur activité.',
       forWho: 'Les organisations qui travaillent avec MAGIS, comme iHela Credit Union, et les équipes qui s’y connectent chaque jour.',
-      did: 'J’ai contribué au sein de l’équipe MAGIS Digital Solutions : stages académique et professionnel en 2025, puis employé depuis septembre 2025.',
+      did: 'J’ai contribué au sein de l’équipe MAGIS Digital Solutions : stages académique et professionnel en 2025, puis développeur front-end et designer UI/UX depuis septembre 2025.',
       built: 'La pile technique MAGIS existante de l’équipe',
       result: 'Les équipes travaillent depuis une plateforme sécurisée unique pour piloter les opérations de leur organisation.',
     },

@@ -28,7 +28,7 @@ export const ui = {
     'resume.languages': 'Languages',
     'resume.glance': 'At a glance', 'resume.now': 'Now', 'resume.before': 'Before', 'resume.award': 'Award',
     'resume.summary': 'Summary', 'resume.achievements': 'Prizes & Achievements',
-    'resume.summaryText': 'UI/UX designer and developer working with Flutter, Astro, Angular and Django. Software engineering studies at the University of Lac-Tanganyika, and currently working at MAGIS Digital Solutions. Available for freelance work and job offers.',
+    'resume.summaryText': 'UI/UX designer and developer working with Flutter, Astro, Angular and Django. Software engineering studies at the University of Lac-Tanganyika, and currently UI/UX designer at MAGIS Digital Solutions. Available for freelance work and job offers.',
     'info.city': 'City', 'info.degree': 'Degree', 'info.email': 'Email', 'info.phone': 'Phone', 'info.languages': 'Languages', 'info.available': 'Available for', 'info.website': 'Website',
     // portfolio
     'portfolio.eyebrow': 'Our works', 'portfolio.title': 'Portfolio',
@@ -84,7 +84,7 @@ export const ui = {
     'resume.languages': 'Langues',
     'resume.glance': 'En un coup d’œil', 'resume.now': 'Actuellement', 'resume.before': 'Avant', 'resume.award': 'Distinction',
     'resume.summary': 'Résumé', 'resume.achievements': 'Prix & réalisations',
-    'resume.summaryText': 'Designer UI/UX et développeur, je travaille avec Flutter, Astro, Angular et Django. Études de génie logiciel à l’Université du Lac Tanganyika, et actuellement en poste chez MAGIS Digital Solutions. Disponible pour des missions freelance et des offres d’emploi.',
+    'resume.summaryText': 'Designer UI/UX et développeur, je travaille avec Flutter, Astro, Angular et Django. Études de génie logiciel à l’Université du Lac Tanganyika, et actuellement designer UI/UX chez MAGIS Digital Solutions. Disponible pour des missions freelance et des offres d’emploi.',
     'info.city': 'Ville', 'info.degree': 'Diplôme', 'info.email': 'E-mail', 'info.phone': 'Téléphone', 'info.languages': 'Langues', 'info.available': 'Disponible pour', 'info.website': 'Site web',
     'portfolio.eyebrow': 'Mes réalisations', 'portfolio.title': 'Portfolio',
     'portfolio.metaDesc': 'Des produits que j’ai conçus et développés, et des plateformes auxquelles j’ai contribué : à qui chacun s’adressait, ce que j’ai fait, avec quoi je l’ai construit et ce qui a changé.',

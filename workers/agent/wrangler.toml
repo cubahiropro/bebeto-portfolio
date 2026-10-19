@@ -1,0 +1,15 @@
+name = "bebeto-agent"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "LIMITS"
+id = "724f6ebb3c0f42c3a80def024226f821"
+
+[vars]
+SITE_ORIGIN = "https://cubahiropro.github.io"
+KNOWLEDGE_URL = "https://cubahiropro.github.io/agent-knowledge.json"
+MODEL = "@cf/google/gemma-4-26b-a4b-it"

@@ -1,0 +1,178 @@
+---
+import { langOf } from '../i18n';
+import { site } from '../data/site';
+const lang = langOf(Astro.url);
+const endpoint = import.meta.env.PUBLIC_AGENT_URL ?? 'https://bebeto-agent.mezimorel12.workers.dev';
+const L = lang === 'fr'
+  ? {
+      open: 'Discuter avec l’assistant de Bebeto', close: 'Fermer le chat', title: 'Assistant de Bebeto',
+      note: 'Assistant IA. Il répond d’après ce site ; Bebeto confirme tout prix ou délai.',
+      hello: 'Bonjour ! Je suis l’assistant IA de Bebeto. Posez-moi une question sur son travail, ses projets ou comment le contacter.',
+      ph: 'Votre message…', send: 'Envoyer', thinking: 'L’assistant écrit…',
+      err: 'Désolé, je ne peux pas répondre pour le moment. Écrivez directement à Bebeto :', rate: 'Vous avez posé beaucoup de questions. Contactez Bebeto directement :',
+      chips: ['Que proposes-tu ?', 'Montre-moi tes projets', 'Es-tu disponible ?', 'Je veux travailler avec toi'],
+      briefTitle: 'Envoyer ce résumé à Bebeto', wa: 'WhatsApp', mail: 'E-mail', mailSubject: 'Nouveau projet depuis le portfolio', waIntro: 'Bonjour Bebeto, je vous écris depuis votre portfolio.',
+    }
+  : {
+      open: 'Chat with Bebeto’s assistant', close: 'Close chat', title: 'Bebeto’s assistant',
+      note: 'AI assistant. It answers from this site; Bebeto confirms any price or date.',
+      hello: 'Hi! I’m Bebeto’s AI assistant. Ask me about his work, his projects, or how to get in touch.',
+      ph: 'Type your message…', send: 'Send', thinking: 'The assistant is typing…',
+      err: 'Sorry, I can’t answer right now. Please write to Bebeto directly:', rate: 'You’ve asked a lot of questions. Please contact Bebeto directly:',
+      chips: ['What do you offer?', 'Show me his projects', 'Is he available?', 'I want to work with him'],
+      briefTitle: 'Send this summary to Bebeto', wa: 'WhatsApp', mail: 'Email', mailSubject: 'New project from the portfolio', waIntro: 'Hello Bebeto, I am writing from your portfolio.',
+    };
+const cfg = JSON.stringify({ endpoint, lang, L, email: site.email, wa: site.whatsapp });
+---
+{endpoint && (
+  <div id="agent" data-cfg={cfg}>
+    <button type="button" class="ag-fab" id="ag-open" aria-label={L.open} aria-expanded="false" aria-controls="ag-panel">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+    </button>
+    <div class="ag-panel" id="ag-panel" role="dialog" aria-label={L.title} hidden>
+      <div class="ag-head"><b>{L.title}</b><button type="button" id="ag-close" aria-label={L.close}>&times;</button></div>
+      <p class="ag-note">{L.note}</p>
+      <div class="ag-log" id="ag-log" role="log" aria-live="polite"></div>
+      <div class="ag-chips" id="ag-chips"></div>
+      <form id="ag-form" autocomplete="off">
+        <input id="ag-input" type="text" maxlength="600" placeholder={L.ph} aria-label={L.ph} required />
+        <button type="submit" id="ag-send">{L.send}</button>
+      </form>
+    </div>
+  </div>
+)}
+
+<style is:global>
+  #agent { position: fixed; right: 18px; bottom: 18px; z-index: 900; font-family: inherit; }
+  .ag-fab { width: 54px; height: 54px; border-radius: 50%; border: 0; background: var(--ink); color: var(--bg); display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+  .ag-fab:hover { transform: scale(1.06); }
+  .ag-panel { position: absolute; right: 0; bottom: 66px; width: min(380px, calc(100vw - 28px)); height: min(560px, 72vh); display: flex; flex-direction: column; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 50px rgba(0,0,0,.28); overflow: hidden; }
+  .ag-panel[hidden] { display: none; }
+  .ag-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); color: var(--ink); }
+  .ag-head button { background: none; border: 0; font-size: 24px; line-height: 1; color: var(--ink); cursor: pointer; }
+  .ag-note { margin: 0; padding: 8px 16px; font-size: 12px; color: var(--text); border-bottom: 1px solid var(--line); }
+  .ag-log { flex: 1; overflow-y: auto; padding: 14px 14px 6px; display: flex; flex-direction: column; gap: 10px; }
+  .ag-msg { max-width: 86%; padding: 10px 13px; border-radius: 12px; font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .ag-msg.bot { background: var(--tile, rgba(127,127,127,.12)); color: var(--ink); align-self: flex-start; }
+  .ag-msg.me { background: var(--ink); color: var(--bg); align-self: flex-end; }
+  .ag-msg a { color: inherit; text-decoration: underline; }
+  .ag-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 14px; }
+  .ag-chips button { font: inherit; font-size: 13px; padding: 6px 11px; border-radius: 99px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+  .ag-chips button:hover { background: var(--ink); color: var(--bg); }
+  .ag-brief { align-self: stretch; border: 1px dashed var(--line); border-radius: 12px; padding: 12px; font-size: 13.5px; color: var(--ink); }
+  .ag-brief b { display: block; margin-bottom: 8px; }
+  .ag-brief a { display: inline-block; margin: 8px 8px 0 0; padding: 7px 14px; border-radius: 99px; background: var(--ink); color: var(--bg); text-decoration: none; font-size: 13px; }
+  #ag-form { display: flex; gap: 8px; padding: 10px 12px 12px; border-top: 1px solid var(--line); }
+  #ag-input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 16px; }
+  #ag-send { padding: 0 16px; border: 0; border-radius: 10px; background: var(--ink); color: var(--bg); font: inherit; font-weight: 600; cursor: pointer; }
+  #ag-send:disabled { opacity: .5; cursor: default; }
+  @media (max-width: 991px) { #agent { bottom: 84px; right: 14px; } }
+  @media (prefers-reduced-motion: reduce) { .ag-fab:hover { transform: none; } }
+</style>
+
+<script>
+  const root = document.getElementById('agent');
+  if (root) {
+    const C = JSON.parse(root.dataset.cfg || '{}');
+    const L = C.L;
+    const $ = (id: string) => document.getElementById(id)!;
+    const panel = $('ag-panel'), openBtn = $('ag-open'), log = $('ag-log'), form = $('ag-form') as HTMLFormElement;
+    const input = $('ag-input') as HTMLInputElement, sendBtn = $('ag-send') as HTMLButtonElement, chips = $('ag-chips');
+    type Msg = { role: 'user' | 'assistant'; content: string };
+    let msgs: Msg[] = [];
+    try { msgs = JSON.parse(sessionStorage.getItem('ag-msgs') || '[]'); } catch {}
+    const save = () => { try { sessionStorage.setItem('ag-msgs', JSON.stringify(msgs.slice(-24))); } catch {} };
+
+    const add = (cls: string, text: string) => {
+      const d = document.createElement('div');
+      d.className = 'ag-msg ' + cls;
+      d.textContent = text;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+      return d;
+    };
+    const brief = (text: string) => {
+      const box = document.createElement('div');
+      box.className = 'ag-brief';
+      const b = document.createElement('b'); b.textContent = L.briefTitle;
+      const p = document.createElement('div'); p.textContent = text;
+      const wa = document.createElement('a');
+      wa.href = `https://wa.me/${C.wa}?text=${encodeURIComponent(L.waIntro + '\n\n' + text)}`;
+      wa.target = '_blank'; wa.rel = 'noopener'; wa.textContent = L.wa;
+      const em = document.createElement('a');
+      em.href = `mailto:${C.email}?subject=${encodeURIComponent(L.mailSubject)}&body=${encodeURIComponent(L.waIntro + '\n\n' + text)}`;
+      em.textContent = L.mail;
+      box.append(b, p, wa, em);
+      log.appendChild(box);
+      log.scrollTop = log.scrollHeight;
+    };
+    const render = (m: Msg) => {
+      if (m.role === 'user') return add('me', m.content);
+      const i = m.content.search(/\n?BRIEF:/i);
+      const shown = (i >= 0 ? m.content.slice(0, i) : m.content).trim();
+      if (shown) add('bot', shown);
+      if (i >= 0) brief(m.content.slice(i).replace(/^\s*BRIEF:\s*/i, '').trim());
+    };
+    const fallback = (rate: boolean) => {
+      add('bot', `${rate ? L.rate : L.err} ${C.email}`);
+    };
+
+    const start = () => {
+      if (log.childElementCount) return;
+      add('bot', L.hello);
+      msgs.forEach(render);
+      if (!msgs.length) {
+        L.chips.forEach((c: string) => {
+          const b = document.createElement('button'); b.type = 'button'; b.textContent = c;
+          b.addEventListener('click', () => ask(c));
+          chips.appendChild(b);
+        });
+      }
+    };
+    const toggle = (open: boolean) => {
+      panel.hidden = !open;
+      openBtn.setAttribute('aria-expanded', String(open));
+      openBtn.setAttribute('aria-label', open ? L.close : L.open);
+      if (open) { start(); input.focus(); }
+      else openBtn.focus();
+    };
+    openBtn.addEventListener('click', () => toggle(panel.hidden));
+    $('ag-close').addEventListener('click', () => toggle(false));
+    addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) toggle(false); });
+
+    async function ask(text: string) {
+      text = text.trim();
+      if (!text) return;
+      chips.textContent = '';
+      msgs.push({ role: 'user', content: text });
+      add('me', text);
+      input.value = '';
+      sendBtn.disabled = true;
+      const wait = add('bot', L.thinking);
+      try {
+        const res = await fetch(C.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lang: C.lang, messages: msgs.slice(-12) }),
+        });
+        wait.remove();
+        if (res.status === 429) { msgs.pop(); fallback(true); }
+        else if (!res.ok) throw new Error(String(res.status));
+        else {
+          const { reply } = await res.json();
+          const m: Msg = { role: 'assistant', content: reply };
+          msgs.push(m);
+          render(m);
+        }
+      } catch {
+        wait.remove();
+        msgs.pop();
+        fallback(false);
+      }
+      save();
+      sendBtn.disabled = false;
+      input.focus();
+    }
+    form.addEventListener('submit', (e) => { e.preventDefault(); ask(input.value); });
+  }
+</script>

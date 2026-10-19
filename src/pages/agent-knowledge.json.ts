@@ -1,0 +1,37 @@
+// Plain-text facts the AI assistant answers from. Built from the same data as the pages, so it never goes stale.
+import { getSite, getServices, getExperience, getEducation, getStack, getProjects, getProfile } from '../i18n/data';
+import { site } from '../data/site';
+
+export function GET() {
+  const out: Record<string, string> = {};
+  for (const lang of ['en', 'fr'] as const) {
+    const S = getSite(lang);
+    const P = getProfile(lang);
+    const lines = [
+      `Name: ${site.fullName} (brand: ${site.name}). ${S.role}. Based in ${site.location}.`,
+      `About: ${S.bio}`,
+      `Available for: ${P.availableFor}.`,
+      `Email: ${site.email}. WhatsApp: ${site.whatsappDisplay}. Phones: ${site.phones.join(', ')}.`,
+      `Study: ${P.degree}.`,
+      '',
+      'SERVICES',
+      ...getServices(lang).map((s) => `- ${s.title}: ${s.text}`),
+      '',
+      'EXPERIENCE',
+      ...getExperience(lang).map((e) => `- ${e.period}, ${e.title} (${e.place}): ${e.text}`),
+      '',
+      'EDUCATION',
+      ...getEducation(lang).map((e) => `- ${e.title}: ${e.text}`),
+      '',
+      'SKILLS',
+      ...getStack(lang).map((g) => `- ${g.group}: ${g.items.join(', ')}`),
+      '',
+      'PROJECTS',
+      ...getProjects(lang).map(
+        (p) => `- ${p.title} [${p.group}, ${p.category}]: ${p.tagline} For: ${p.forWho} What Bebeto did: ${p.did} Result: ${p.result}`,
+      ),
+    ];
+    out[lang] = lines.join('\n');
+  }
+  return new Response(JSON.stringify(out), { headers: { 'Content-Type': 'application/json' } });
+}

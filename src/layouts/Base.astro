@@ -3,6 +3,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Logo from '../components/Logo.astro';
 import MobileBar from '../components/MobileBar.astro';
+import Agent from '../components/Agent.astro';
 import '../styles/global.css';
 import { site } from '../data/site';
 import { getSite } from '../i18n/data';
@@ -62,6 +63,7 @@ const frHref = lang === 'fr' ? here : otherLangPath('en', here);
     <main><slot /></main>
     <Footer />
     <MobileBar />
+    <Agent />
     <script>
       // ---- loading screen: shown on the first page of every visit (about a second), not on later pages ----
       const html = document.documentElement;

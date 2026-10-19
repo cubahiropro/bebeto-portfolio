@@ -7,6 +7,8 @@ import '../styles/global.css';
 import { site } from '../data/site';
 import { getSite } from '../i18n/data';
 import { langOf, otherLangPath } from '../i18n';
+import '@fontsource-variable/syne';
+import syneLatin from '@fontsource-variable/syne/files/syne-latin-wght-normal.woff2?url';
 
 interface Props { title?: string; description?: string }
 const lang = langOf(Astro.url);
@@ -14,8 +16,8 @@ const S = getSite(lang);
 const { title, description = S.bio } = Astro.props;
 const full = title ? `${title} — ${site.name}` : `${site.name} — ${S.role}`;
 const here = Astro.url.pathname;
-const enHref = lang === 'en' ? here : otherLangPath('en', here);
-const frHref = lang === 'fr' ? here : otherLangPath('fr', here);
+const enHref = lang === 'en' ? here : otherLangPath('fr', here); // from a French page, strip /fr
+const frHref = lang === 'fr' ? here : otherLangPath('en', here);
 ---
 <!doctype html>
 <html lang={lang}>
@@ -35,9 +37,7 @@ const frHref = lang === 'fr' ? here : otherLangPath('fr', here);
     <meta property="og:description" content={description} />
     <meta property="og:image" content="/og.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" />
+    <link rel="preload" as="font" type="font/woff2" href={syneLatin} crossorigin />
     <slot name="head" />
     <script is:inline>
       document.documentElement.classList.add('js');
@@ -61,21 +61,19 @@ const frHref = lang === 'fr' ? here : otherLangPath('fr', here);
     <Footer />
     <MobileBar />
     <script>
-      // ---- preloader: wait for fonts + first paint, never for slow third-party iframes ----
+      // ---- loading screen: only for a slow FIRST visit of a session, never twice ----
+      const html = document.documentElement;
       const pre = document.getElementById('preloader');
-      let hidden = false;
+      const firstVisit = !html.classList.contains('seen');
+      let shown = false;
+      const showTimer = firstVisit ? setTimeout(() => { shown = true; pre?.classList.add('show'); }, 500) : 0;
       const hidePre = () => {
-        if (hidden) return;
-        hidden = true;
-        pre?.classList.add('done');
-        kickReveal();
+        clearTimeout(showTimer);
+        if (shown && pre) {
+          pre.classList.add('out');
+          setTimeout(() => pre.remove(), 400);
+        } else pre?.remove();
       };
-      const quick = document.documentElement.classList.contains('seen');
-      const fonts = (document as any).fonts?.ready ?? Promise.resolve();
-      Promise.race([fonts, new Promise((r) => setTimeout(r, 1200))]).then(() =>
-        setTimeout(hidePre, quick ? 0 : 350)
-      );
-      setTimeout(hidePre, 1600); // hard cap
       addEventListener('pageshow', (e) => { if (e.persisted) hidePre(); }); // back/forward cache
 
       // ---- split text into characters (like the demo's Splitting.js) ----
@@ -109,7 +107,10 @@ const frHref = lang === 'fr' ? here : otherLangPath('fr', here);
         el.classList.add('splitting');
         if (el.dataset.split === 'txt') el.classList.add('txt');
       };
-      if (!reduce) document.querySelectorAll<HTMLElement>('[data-split]').forEach(split);
+      document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
+        if (!reduce) split(el);
+        el.setAttribute('data-ready', '');
+      });
 
       // ---- reveal on scroll (like WOW.js, offset 100). Plain scroll check, so nothing can get stuck
       //      invisible near the bottom of short pages the way an IntersectionObserver margin can. ----
@@ -143,7 +144,10 @@ const frHref = lang === 'fr' ? here : otherLangPath('fr', here);
       addEventListener('scroll', reveal, { passive: true });
       addEventListener('resize', reveal);
       addEventListener('load', reveal);
-      setTimeout(kickReveal, 2600); // safety: if the preloader never reports, still reveal
+      kickReveal(); // text and images start animating as soon as the page is parsed
+      // the page is "ready" once the fonts are in (or after 0.8s at most)
+      Promise.race([(document as any).fonts?.ready ?? Promise.resolve(), new Promise((r) => setTimeout(r, 800))]).then(hidePre);
+      setTimeout(hidePre, 1500); // hard cap
     </script>
   </body>
 </html>

@@ -1,3 +1,5 @@
+@import './brand.generated.css';
+
 :root {
   color-scheme: light;
   --bg: #f4f5f7;
@@ -35,7 +37,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { transition: background-color .3s, color .3s; font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); line-height: 1.75; font-size: 16px; overflow-x: hidden; }
+body { transition: background-color .3s, color .3s; font-family: 'Syne Variable', 'Syne', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.75; font-size: 16px; overflow-x: hidden; }
 body.lb-open { overflow: hidden; }
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
@@ -71,11 +73,14 @@ section { padding: 120px 0; }
   .js .imago { clip-path: none; }
 }
 
-/* preloader */
-#preloader { position: fixed; inset: 0; z-index: 999999; background: var(--bg); display: grid; place-items: center; transition: opacity .5s, visibility .5s; animation: pre-hide 0s 3s forwards; }
-#preloader.done { opacity: 0; visibility: hidden; }
-.seen #preloader { transition-duration: .2s; }
-@keyframes pre-hide { to { opacity: 0; visibility: hidden; } }
+/* loading screen: off by default. It only appears if a first visit is still loading after ~0.5s,
+   and never again in the same session, so fast loads (and reloads) never show it at all. */
+#preloader { display: none; position: fixed; inset: 0; z-index: 999999; background: var(--bg); place-items: center; opacity: 1; transition: opacity .35s; }
+#preloader.show { display: grid; }
+#preloader.out { opacity: 0; pointer-events: none; }
+/* text that gets split into letters stays hidden until it is ready, so it never flashes before animating */
+.js [data-split]:not([data-ready]) { visibility: hidden; animation: unhide 0s 2s forwards; }
+@keyframes unhide { to { visibility: visible; } }
 
 /* ---------- section headings ---------- */
 h6.eyebrow, .eyebrow { display: inline-block; font-weight: 700; font-size: 12px; color: var(--text); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; line-height: 1.5; }
@@ -95,12 +100,8 @@ section.first { padding-top: 220px; }
 .site-header.scrolled.awake { transition: transform .3s; transform: translateY(0); }
 .site-header.scrolled.sleep { transition: transform .3s; transform: translateY(-100%); }
 .logo { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); position: relative; z-index: 1021; }
-.logo-mark { display: inline-flex; align-items: center; }
-.logo-mark img { height: 24px; width: auto; }
-.logo-full img { width: 150px; height: auto; }
-.logo .dk { display: none; }
-:root[data-theme='dark'] .logo .lt { display: none; }
-:root[data-theme='dark'] .logo .dk { display: block; }
+.logo-mark { display: inline-block; height: 24px; aspect-ratio: 316 / 240; background: var(--ink); -webkit-mask: var(--mark-url) center / contain no-repeat; mask: var(--mark-url) center / contain no-repeat; }
+.logo-art { display: block; width: 150px; aspect-ratio: 819 / 770; background: var(--ink); -webkit-mask: var(--logo-url) center / contain no-repeat; mask: var(--logo-url) center / contain no-repeat; }
 .logo-word { font-weight: 800; font-size: 17px; letter-spacing: .14em; text-transform: uppercase; line-height: 1; }
 .tools { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1022; }
 .burger, .theme { width: 50px; height: 50px; border-radius: 50%; border: 0; background: #fff; cursor: pointer; position: relative; flex: none; }

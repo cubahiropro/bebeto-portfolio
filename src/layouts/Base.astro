@@ -17,6 +17,7 @@ const { title, description = S.bio } = Astro.props;
 const full = title ? `${title} — ${site.name}` : `${site.name} — ${S.role}`;
 const here = Astro.url.pathname;
 const enHref = lang === 'en' ? here : otherLangPath('fr', here); // from a French page, strip /fr
+const abs = (p: string) => new URL(p, Astro.site ?? Astro.url).href;
 const frHref = lang === 'fr' ? here : otherLangPath('en', here);
 ---
 <!doctype html>
@@ -31,11 +32,12 @@ const frHref = lang === 'fr' ? here : otherLangPath('en', here);
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
-    <link rel="alternate" hreflang="en" href={enHref} />
-    <link rel="alternate" hreflang="fr" href={frHref} />
+    <link rel="canonical" href={new URL(here, Astro.site ?? Astro.url).href} />
+    <link rel="alternate" hreflang="en" href={abs(enHref)} />
+    <link rel="alternate" hreflang="fr" href={abs(frHref)} />
     <meta property="og:title" content={full} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="/og.jpg" />
+    <meta property="og:image" content={new URL('/og.jpg', Astro.site ?? Astro.url).href} />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preload" as="font" type="font/woff2" href={syneLatin} crossorigin />
     <slot name="head" />

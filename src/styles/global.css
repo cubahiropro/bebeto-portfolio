@@ -470,6 +470,17 @@ body.menu-open .theme { background: var(--bg); }
 .proof b { display: block; overflow-wrap: anywhere; font-size: 38px; line-height: 1.1; font-weight: 800; color: var(--ink); margin-bottom: 8px; letter-spacing: -.01em; }
 .proof span { display: block; font-size: 14px; line-height: 1.5; }
 
+/* page not found */
+.nf { min-height: 80vh; }
+.nf-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(260px, 1fr); gap: 50px; align-items: center; }
+.nf h1 { font-size: clamp(30px, 4.1vw, 64px); overflow-wrap: break-word; font-weight: 800; text-transform: uppercase; line-height: 1.05; margin-bottom: 24px; }
+.nf-actions { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 30px; }
+.nf-art img { width: 100%; max-width: 460px; height: auto; margin-left: auto; }
+.nf-art .dk { display: none; }
+:root[data-theme='dark'] .nf-art .lt { display: none; }
+:root[data-theme='dark'] .nf-art .dk { display: block; }
+[hidden] { display: none !important; }
+
 /* stack chips */
 .stack-row { display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: start; padding: 16px 0; border-top: 2px solid var(--line); }
 .stack-row:last-child { border-bottom: 2px solid var(--line); }
@@ -539,7 +550,8 @@ button.send:hover { background: var(--ink); color: var(--bg); }
   .page-title { padding-top: 160px; }
   .head { grid-template-columns: 1fr; }
   .pp-grid { grid-template-columns: 1fr; gap: 50px; }
-  .blog-grid, .about-grid, .resume-grid, .skills-grid, .group-head, .about2, .resume-cols { grid-template-columns: 1fr; }
+  .blog-grid, .about-grid, .resume-grid, .skills-grid, .group-head, .about2, .resume-cols, .nf-grid { grid-template-columns: 1fr; }
+  .nf-art img { margin: 0 auto; max-width: 320px; }
   .about2 { gap: 44px; }
   .about2-side { max-width: 520px; }
   .resume-cols { gap: 10px; }
@@ -705,3 +717,9 @@ input, textarea, select { font-size: 16px; } /* 16px stops iOS from zooming into
   .proof span { font-size: 13px; }
 }
 @media (max-width: 380px) { .proof b { font-size: 26px; } }
+
+@media (max-width: 640px) {
+  .nf-grid { grid-template-columns: minmax(0, 1fr); }
+  .nf-text { min-width: 0; }
+  .nf h1 { font-size: clamp(25px, 8vw, 40px); overflow-wrap: anywhere; }
+}

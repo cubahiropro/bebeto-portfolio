@@ -77,7 +77,8 @@ export const interests = ['Creativity', 'UI/UX Design', 'Team spirit', 'Leadersh
 
 // Your work and volunteering, newest first. Dates and places come from what you told me (the PDF CV still says "25 April - present").
 export const experience = [
-  { period: 'Sept 2025 - Present', title: 'Employee, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Working with the MAGIS team on the MAGIS ERP and iHela Ryanje platforms.' },
+  { period: 'Oct 2025 - Present', title: 'UI/UX Designer, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Designing interfaces and user experiences for the MAGIS team’s platforms.' },
+  { period: 'Sept 2025', title: 'Front-end developer, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Worked as a front-end developer on the online banking platform for one month, my first role after joining the team.' },
   { period: 'June - Aug 2025', title: 'Professional internship, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Professional software internship with the MAGIS team. It led to a job.' },
   { period: 'April - May 2025', title: 'Academic internship, MAGIS Digital Solutions', place: 'Bujumbura, Burundi', text: 'Academic internship in computer software at MAGIS-ERP.' },
   { period: '2021 - Present', title: 'AYLF (Africa Leadership Forum)', place: 'Universities', text: 'Organization of young leaders in universities.' },
@@ -98,7 +99,7 @@ export type Entry = { title: string; period?: string; place?: string; text?: str
 
 // The "At a glance" card. Leave `award` empty to hide that row.
 export const glance = {
-  now: 'Working at MAGIS Digital Solutions',
+  now: 'UI/UX designer at MAGIS Digital Solutions',
   before: 'Software engineering student, University of Lac-Tanganyika (2021 - 2024)',
   award: '',
 };
@@ -212,7 +213,7 @@ export const projects: Project[] = [
     category: 'Fintech',
     tagline: 'The digital financial-services platform of iHela Credit Union, on web and mobile.',
     forWho: 'The members and staff of iHela Credit Union in Burundi.',
-    did: 'Contributed to the platform as part of the MAGIS team that builds it, first as an intern and now as an employee.',
+    did: 'Contributed as part of the MAGIS team that builds it: front-end development on the online banking platform, then UI/UX design.',
     built: 'The team\'s existing MAGIS platform',
     result: 'Members manage accounts, transfers, withdrawals, payments and savings clubs from a single app.',
     live: 'https://ihela.bi',
@@ -226,7 +227,7 @@ export const projects: Project[] = [
     category: 'ERP',
     tagline: 'MAGIS ERP, the platform that helps organisations run and grow their business.',
     forWho: 'Organisations that run on MAGIS, such as iHela Credit Union, and the staff who sign in to it every day.',
-    did: 'Contributed as part of the MAGIS Digital Solutions team: academic and professional internships in 2025, then employee since September 2025.',
+    did: 'Contributed as part of the MAGIS Digital Solutions team: academic and professional internships in 2025, then front-end developer and UI/UX designer since September 2025.',
     built: 'The team\'s existing MAGIS stack',
     result: 'Staff work from one secure platform to manage their organisation\'s operations.',
     live: 'https://magis.bi',

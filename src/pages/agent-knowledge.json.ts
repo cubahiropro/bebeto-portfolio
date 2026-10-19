@@ -1,6 +1,12 @@
 // Plain-text facts the AI assistant answers from. Built from the same data as the pages, so it never goes stale.
 import { getSite, getServices, getExperience, getEducation, getStack, getProjects, getProfile } from '../i18n/data';
 import { site } from '../data/site';
+import notesEn from '../data/agent-notes.en.md?raw';
+import notesFr from '../data/agent-notes.fr.md?raw';
+
+// Hand-written extra facts (src/data/agent-notes.*.md): comment lines and unfinished "(Add ...)" lines are dropped.
+const notes = (raw: string) =>
+  raw.split('\n').filter((l) => l.trim() && !l.startsWith('#') && !/\((Add|Ajoutez) /.test(l)).join('\n');
 
 export function GET() {
   const out: Record<string, string> = {};
@@ -30,6 +36,9 @@ export function GET() {
       ...getProjects(lang).map(
         (p) => `- ${p.title} [${p.group}, ${p.category}]: ${p.tagline} For: ${p.forWho} What Bebeto did: ${p.did} Result: ${p.result}`,
       ),
+      '',
+      'MORE FACTS',
+      notes(lang === 'fr' ? notesFr : notesEn),
     ];
     out[lang] = lines.join('\n');
   }

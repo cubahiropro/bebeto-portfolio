@@ -76,7 +76,7 @@ section { padding: 120px 0; }
 /* loading screen: off by default. It only appears if a first visit is still loading after ~0.5s,
    and never again in the same session, so fast loads (and reloads) never show it at all. */
 #preloader { display: none; position: fixed; inset: 0; z-index: 999999; background: var(--bg); place-items: center; opacity: 1; transition: opacity .35s; }
-#preloader.show { display: grid; }
+#preloader.show, html.js:not(.seen) #preloader { display: grid; }
 #preloader.out { opacity: 0; pointer-events: none; }
 /* text that gets split into letters stays hidden until it is ready, so it never flashes before animating */
 .js [data-split]:not([data-ready]) { visibility: hidden; animation: unhide 0s 2s forwards; }

@@ -63,18 +63,17 @@ const frHref = lang === 'fr' ? here : otherLangPath('en', here);
     <Footer />
     <MobileBar />
     <script>
-      // ---- loading screen: only for a slow FIRST visit of a session, never twice ----
+      // ---- loading screen: shown on the first page of every visit (about a second), not on later pages ----
       const html = document.documentElement;
       const pre = document.getElementById('preloader');
-      const firstVisit = !html.classList.contains('seen');
-      let shown = false;
-      const showTimer = firstVisit ? setTimeout(() => { shown = true; pre?.classList.add('show'); }, 500) : 0;
+      const shown = !html.classList.contains('seen');
+      if (shown) pre?.classList.add('show');
       const hidePre = () => {
-        clearTimeout(showTimer);
-        if (shown && pre) {
+        if (!pre) return;
+        if (shown) {
           pre.classList.add('out');
           setTimeout(() => pre.remove(), 400);
-        } else pre?.remove();
+        } else pre.remove();
       };
       addEventListener('pageshow', (e) => { if (e.persisted) hidePre(); }); // back/forward cache
 
@@ -153,9 +152,13 @@ const frHref = lang === 'fr' ? here : otherLangPath('en', here);
       addEventListener('resize', reveal);
       addEventListener('load', reveal);
       kickReveal(); // text and images start animating as soon as the page is parsed
-      // the page is "ready" once the fonts are in (or after 0.8s at most)
-      Promise.race([(document as any).fonts?.ready ?? Promise.resolve(), new Promise((r) => setTimeout(r, 800))]).then(hidePre);
-      setTimeout(hidePre, 1500); // hard cap
+      // hide once the fonts are in and the logo has been on screen for ~1s (hard cap 2.5s)
+      const minShow = shown ? 1000 : 0;
+      Promise.all([
+        Promise.race([(document as any).fonts?.ready ?? Promise.resolve(), new Promise((r) => setTimeout(r, 1500))]),
+        new Promise((r) => setTimeout(r, minShow)),
+      ]).then(hidePre);
+      setTimeout(hidePre, 2500);
     </script>
   </body>
 </html>

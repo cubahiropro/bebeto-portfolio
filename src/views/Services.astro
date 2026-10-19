@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Services from '../components/Services.astro';
+import Testimonials from '../components/Testimonials.astro';
+import { getSite } from '../i18n/data';
+import { langOf, t } from '../i18n';
+const lang = langOf(Astro.url);
+const site = getSite(lang);
+---
+<Base title={t(lang, 'services.title')}>
+  <section class="first">
+    <div class="wrap">
+      <SectionHead eyebrow={t(lang, 'services.eyebrow')} title={t(lang, 'services.title')} text={site.bio} />
+      <Services />
+    </div>
+  </section>
+  <Testimonials />
+</Base>

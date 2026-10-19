@@ -1,0 +1,73 @@
+---
+import Logo from './Logo.astro';
+import { site } from '../data/site';
+import { getNav } from '../i18n/data';
+import { langOf, link, t, barePath } from '../i18n';
+const lang = langOf(Astro.url);
+const path = barePath(Astro.url.pathname);
+const nav = getNav(lang);
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+const wa = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(t(lang, 'contact.waText'))}`;
+---
+<header class="site-header" id="top">
+  <div class="wrap">
+    <Logo />
+    <div class="tools">
+      <a class="talk" href={link(lang, '/contact')}>{t(lang, 'header.talk')}</a>
+      <button class="theme" id="theme" type="button" aria-label={t(lang, 'header.theme')}>
+        <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <button class="burger" id="burger" type="button" aria-label={t(lang, 'header.menu')} aria-expanded="false" aria-controls="drawer"><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+<div class="drawer-bg" id="drawer-bg"></div>
+<nav class="drawer" id="drawer" aria-label={t(lang, 'header.mainNav')}>
+  <ul>
+    {nav.map((n, i) => <li style={`--i:${i}`}><a href={n.href} class={isActive(n.bare) ? 'active' : ''}>{n.label}</a></li>)}
+  </ul>
+  <div class="drawer-reach">
+    <p>{t(lang, 'drawer.reach')}</p>
+    <a href={wa} target="_blank" rel="noopener">{t(lang, 'bar.whatsapp')} · {site.whatsappDisplay}</a>
+    <a href={`tel:${site.phone.replace(/\s/g, '')}`}>{t(lang, 'bar.call')} · {site.phone}</a>
+    <a href={`mailto:${site.email}`}>{site.email}</a>
+  </div>
+</nav>
+<script>
+  const burger = document.getElementById('burger');
+  const drawer = document.getElementById('drawer');
+  const bg = document.getElementById('drawer-bg');
+  const header = document.getElementById('top');
+
+  const toggle = (open?: boolean) => {
+    const on = open ?? !drawer?.classList.contains('open');
+    drawer?.classList.toggle('open', on);
+    bg?.classList.toggle('open', on);
+    burger?.classList.toggle('open', on);
+    burger?.setAttribute('aria-expanded', String(on));
+    document.body.classList.toggle('menu-open', on);
+  };
+  burger?.addEventListener('click', () => toggle());
+  bg?.addEventListener('click', () => toggle(false)); // click outside the drawer closes it
+  drawer?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => toggle(false)));
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && toggle(false));
+
+  document.getElementById('theme')?.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('theme', next); } catch {}
+  });
+
+  // Same thresholds as the demo: >150 fixed white bar, >350 slides in, back <350 slides out.
+  const onScroll = () => {
+    const st = scrollY;
+    if (!header) return;
+    if (st > 150) header.classList.add('scrolled');
+    else header.classList.remove('scrolled', 'sleep', 'awake');
+    if (st > 350) { header.classList.add('awake'); header.classList.remove('sleep'); }
+    else if (header.classList.contains('awake')) { header.classList.remove('awake'); header.classList.add('sleep'); }
+  };
+  onScroll();
+  addEventListener('scroll', onScroll, { passive: true });
+</script>

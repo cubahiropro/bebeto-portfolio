@@ -1,0 +1,13 @@
+---
+import { skills } from '../data/site';
+interface Props { items?: { name: string; level: number }[] }
+const { items = skills } = Astro.props;
+---
+<div>
+  {items.map((s) => (
+    <div class="skill">
+      <div class="skill-top"><span>{s.name}</span><span>{s.level}%</span></div>
+      <div class="bar" style={`--w:${s.level}%`}><i></i></div>
+    </div>
+  ))}
+</div>

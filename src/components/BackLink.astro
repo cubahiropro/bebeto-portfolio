@@ -1,0 +1,24 @@
+---
+interface Props { href: string; label?: string }
+const { href, label = 'Back' } = Astro.props;
+---
+<a class="back" href={href} data-back>
+  <span class="back-circle" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+  </span>
+  <span>{label}</span>
+</a>
+<script>
+  // Go back to wherever the visitor came from (e.g. the home carousel or the filtered list);
+  // if they landed here directly, the link's own href takes them to the list page.
+  document.querySelectorAll<HTMLAnchorElement>('a[data-back]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      let sameSite = false;
+      try { sameSite = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch {}
+      if (sameSite && history.length > 1) {
+        e.preventDefault();
+        history.back();
+      }
+    });
+  });
+</script>

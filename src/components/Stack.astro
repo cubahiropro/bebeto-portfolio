@@ -1,0 +1,13 @@
+---
+import { getStack } from '../i18n/data';
+import { langOf } from '../i18n';
+const stack = getStack(langOf(Astro.url));
+---
+<div class="stack">
+  {stack.map((g) => (
+    <div class="stack-row">
+      <h4>{g.group}</h4>
+      <ul>{g.items.map((i) => <li>{i}</li>)}</ul>
+    </div>
+  ))}
+</div>

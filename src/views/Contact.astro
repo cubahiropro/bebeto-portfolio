@@ -1,0 +1,83 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../data/site';
+import { langOf, t } from '../i18n';
+const lang = langOf(Astro.url);
+// Optional: set PUBLIC_FORM_ENDPOINT in .env (e.g. a Formspree URL) to send messages straight from the page.
+// Without it, the form opens the visitor's email app with the message already written, so it always works.
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT ?? '';
+const wa = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(t(lang, 'contact.waText'))}`;
+const tel = (n: string) => `tel:${n.replace(/\s/g, '')}`;
+const labels = JSON.stringify({
+  defaultSubject: t(lang, 'form.defaultSubject'), sending: t(lang, 'form.sending'), sent: t(lang, 'form.sent'),
+  failed: t(lang, 'form.failed'), mailOpen: t(lang, 'form.mailOpen'),
+});
+---
+<Base title={t(lang, 'contact.title')} description={t(lang, 'contact.meta')}>
+  <div class="wrap page-title">
+    <h6 class="eyebrow" data-split>{t(lang, 'contact.eyebrow')}</h6><br />
+    <h1 data-split>{t(lang, 'contact.title')}</h1>
+  </div>
+  <section style="padding-top:60px">
+    <div class="wrap contact-grid">
+      <div class="contact-info">
+        <p class="lead-line" style="margin-top:0">{t(lang, 'contact.lead')}</p>
+        <h4>{t(lang, 'contact.email')}</h4><p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+        <h4>{t(lang, 'contact.phone')}</h4><p>{site.phones.map((n, i) => <>{i > 0 && <br />}<a href={tel(n)}>{n}</a></>)}</p>
+        <h4>{t(lang, 'contact.whatsapp')}</h4><p><a href={wa} target="_blank" rel="noopener">{site.whatsappDisplay}</a></p>
+        <h4>{t(lang, 'contact.location')}</h4><p>{site.location}</p>
+        <a class="btn-link auto" href={wa} target="_blank" rel="noopener" style="margin-top:20px"><span>{t(lang, 'contact.waButton')}</span></a>
+      </div>
+
+      <form id="contact-form" data-endpoint={endpoint} data-to={site.email} data-labels={labels}>
+        <input type="text" name="name" placeholder={t(lang, 'form.name')} autocomplete="name" required />
+        <input type="email" name="email" placeholder={t(lang, 'form.email')} autocomplete="email" required />
+        <input type="text" name="subject" placeholder={t(lang, 'form.subject')} />
+        <textarea name="message" placeholder={t(lang, 'form.message')} required></textarea>
+        <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp" />
+        <button class="send" type="submit">{t(lang, 'form.send')}</button>
+        <p class="form-note" id="form-note" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const note = document.getElementById('form-note')!;
+  if (form) {
+    const L = JSON.parse(form.dataset.labels || '{}');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      if (data.get('company')) return; // honeypot: bots fill this, people never see it
+      const name = String(data.get('name') || '').trim();
+      const email = String(data.get('email') || '').trim();
+      const subject = String(data.get('subject') || '').trim() || `${L.defaultSubject} ${name}`;
+      const message = String(data.get('message') || '').trim();
+      const endpoint = form.dataset.endpoint;
+      const btn = form.querySelector('button')!;
+
+      if (endpoint) {
+        btn.setAttribute('disabled', '');
+        note.textContent = L.sending;
+        try {
+          const res = await fetch(endpoint, { method: 'POST', headers: { Accept: 'application/json' }, body: data });
+          if (!res.ok) throw new Error(String(res.status));
+          form.reset();
+          note.textContent = L.sent;
+        } catch {
+          note.textContent = `${L.failed} ${form.dataset.to}.`;
+        } finally {
+          btn.removeAttribute('disabled');
+        }
+        return;
+      }
+
+      // No form service configured: open the visitor's email app with everything filled in.
+      const body = `${message}\n\n— ${name} (${email})`;
+      location.href = `mailto:${form.dataset.to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      note.textContent = `${L.mailOpen} ${form.dataset.to}.`;
+    });
+  }
+</script>

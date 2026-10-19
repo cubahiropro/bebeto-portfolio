@@ -1,0 +1,66 @@
+---
+import { siFacebook, siInstagram, siWhatsapp, siThreads, siX, siLinkedin, siGithub, siDiscord, siPinterest } from 'simple-icons';
+import { site } from '../data/site';
+import { langOf, t, otherLangPath } from '../i18n';
+
+const lang = langOf(Astro.url);
+const here = Astro.url.pathname;
+// the same page in each language, so the dropdown always lands on the matching page
+const hrefs = { en: lang === 'en' ? here : otherLangPath('fr', here), fr: lang === 'fr' ? here : otherLangPath('en', here) };
+
+const icons: Record<string, string> = {
+  facebook: siFacebook.path,
+  instagram: siInstagram.path,
+  whatsapp: siWhatsapp.path,
+  threads: siThreads.path,
+  x: siX.path,
+  linkedin: siLinkedin.path,
+  github: siGithub.path,
+  discord: siDiscord.path,
+  pinterest: siPinterest.path,
+};
+const tel = (n: string) => `tel:${n.replace(/\s/g, '')}`;
+---
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <h4>{t(lang, 'footer.touch')}</h4>
+        <p>
+          <a href={`mailto:${site.email}`}>{site.email}</a><br />
+          <a href={tel(site.phone)}>{site.phone}</a><br />
+          <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener">{site.whatsappDisplay} · WhatsApp</a>
+        </p>
+      </div>
+      <div>
+        <h4>{t(lang, 'footer.locations')}</h4>
+        <p>{site.location}</p>
+      </div>
+      <div class="socials">
+        {site.socials.map((s) => (
+          <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} title={s.label}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icons[s.icon]} /></svg>
+          </a>
+        ))}
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <p class="copy">© {new Date().getFullYear()} {site.name} · {site.fullName}. {t(lang, 'footer.rights')}</p>
+      <label class="lang">
+        <span class="sr-only">{t(lang, 'footer.language')}</span>
+        <select id="lang-select" data-en={hrefs.en} data-fr={hrefs.fr} aria-label={t(lang, 'footer.language')}>
+          <option value="en" selected={lang === 'en'}>EN</option>
+          <option value="fr" selected={lang === 'fr'}>FR</option>
+        </select>
+      </label>
+    </div>
+  </div>
+</footer>
+<script>
+  const sel = document.getElementById('lang-select') as HTMLSelectElement | null;
+  sel?.addEventListener('change', () => {
+    const to = sel.dataset[sel.value as 'en' | 'fr'];
+    try { localStorage.setItem('lang', sel.value); } catch {}
+    if (to) location.href = to;
+  });
+</script>

@@ -1,0 +1,191 @@
+---
+import Base from '../layouts/Base.astro';
+import Testimonials from '../components/Testimonials.astro';
+import BackLink from '../components/BackLink.astro';
+import { projectImage } from '../data/site';
+import { getProjects } from '../i18n/data';
+import { langOf, link, t } from '../i18n';
+
+interface Props { slug: string }
+const { slug } = Astro.props;
+const lang = langOf(Astro.url);
+const list = getProjects(lang);
+const i = list.findIndex((p) => p.slug === slug);
+const project = list[i];
+const prev = list[(i - 1 + list.length) % list.length];
+const next = list[(i + 1) % list.length];
+const cover = (p: (typeof list)[number]) => (p.images.length ? projectImage(p.images[0]) : '');
+const groupLabel = project.group === 'shipped' ? t(lang, 'portfolio.shipped') : t(lang, 'portfolio.contributed');
+// The four questions every case answers
+const answers: [string, string][] = [
+  [t(lang, 'case.who'), project.forWho],
+  [project.group === 'shipped' ? t(lang, 'case.did') : t(lang, 'case.part'), project.did],
+  [t(lang, 'case.built'), project.built],
+  [t(lang, 'case.changed'), project.result],
+];
+---
+<Base title={project.title} description={project.tagline}>
+  <section class="portfolio-page">
+    <div class="wrap"><BackLink href={link(lang, '/portfolio')} label={t(lang, 'case.back')} /></div>
+    <div class="wrap pp-grid">
+      <div class="gallery" id="gallery" data-count={project.images.length || 1}>
+        <div class="g-track">
+          {project.images.length
+            ? project.images.map((im, i) => (
+                <a class="g-item" href={projectImage(im)} data-i={i} aria-label={`${t(lang, 'case.openImage')} ${i + 1} ${t(lang, 'case.of')} ${project.images.length}`}>
+                  <div class="g-box"><img src={projectImage(im)} alt={`${project.title} ${t(lang, 'case.screenshot')} ${i + 1}`} draggable="false" loading={i ? 'lazy' : 'eager'} /></div>
+                </a>
+              ))
+            : (
+                <div class="g-item">
+                  <div class="g-box live"><div class="stage"><iframe src={project.live} title={`${project.title} ${t(lang, 'case.preview')}`} tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe></div></div>
+                </div>
+              )}
+        </div>
+      </div>
+
+      <div class="pp-info">
+        <h6 class="eyebrow" data-split>{groupLabel} · {project.category}</h6><br />
+        <h1 data-split class={project.title.length > 10 ? "long" : ""}>{project.title}</h1>
+        <p class="lead-line fade-up" style="--d:.1s">{project.tagline}</p>
+        <dl class="answers">
+          {answers.map(([k, v], i) => (
+            <div class="fade-up" style={`--d:${0.2 + i * 0.1}s`}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+        {project.live && (
+          <div class="fade-up mt45" style="--d:.9s">
+            <a class="btn-link" href={project.live} target="_blank" rel="noopener"><span>{t(lang, 'case.live')}</span></a>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="nex-prv">
+    <div class="wrap">
+      <div class="np">
+        <a class="prv" href={link(lang, `/portfolio/${prev.slug}`)}>
+          <div class="img" style={cover(prev) ? `background-image:url(${cover(prev)})` : ''}>
+            <div class="ontop"><h5>{prev.title}</h5><span>{t(lang, 'case.prev')}</span></div>
+            <div class="overly"></div>
+          </div>
+        </a>
+        <a class="all-works" href={link(lang, '/portfolio')} aria-label={t(lang, 'case.all')}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="5" height="5"/><rect x="9.5" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="9.5" width="5" height="5"/><rect x="9.5" y="9.5" width="5" height="5"/><rect x="16" y="9.5" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><rect x="9.5" y="16" width="5" height="5"/><rect x="16" y="16" width="5" height="5"/></svg>
+        </a>
+        <a class="nxt" href={link(lang, `/portfolio/${next.slug}`)}>
+          <div class="img right" style={cover(next) ? `background-image:url(${cover(next)})` : ''}>
+            <div class="ontop"><h5>{next.title}</h5><span>{t(lang, 'case.next')}</span></div>
+            <div class="overly"></div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <Testimonials />
+
+  <div class="lb" id="lb" hidden aria-modal="true" role="dialog" aria-label={t(lang, 'lightbox.label')}>
+    <button class="lb-x" id="lb-x" aria-label={t(lang, 'lightbox.close')}>×</button>
+    <button class="lb-n lb-prev" id="lb-prev" aria-label={t(lang, 'lightbox.prev')}>‹</button>
+    <img id="lb-img" alt="" />
+    <button class="lb-n lb-next" id="lb-next" aria-label={t(lang, 'lightbox.next')}>›</button>
+    <div class="lb-c" id="lb-c"></div>
+  </div>
+</Base>
+
+<script>
+  const gallery = document.getElementById('gallery')!;
+  const track = gallery.querySelector<HTMLElement>('.g-track')!;
+  const links = [...gallery.querySelectorAll<HTMLAnchorElement>('a.g-item')];
+  const count = links.length || 1;
+  let index = 0, startX = 0, startOffset = 0, dragging = false, moved = false, timer: number;
+
+  const width = () => gallery.getBoundingClientRect().width;
+  const go = (i: number) => {
+    index = ((i % count) + count) % count;
+    track.style.transform = `translateX(${-index * width()}px)`;
+  };
+  const play = () => {
+    clearInterval(timer);
+    if (count > 1) timer = window.setInterval(() => go(index + 1), 4500);
+  };
+
+  gallery.addEventListener('pointerdown', (e) => {
+    if (count < 2) return;
+    dragging = true; moved = false; startX = e.clientX; startOffset = -index * width();
+    track.classList.add('nodrag-anim'); gallery.classList.add('drag');
+  });
+  addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 5) moved = true;
+    track.style.transform = `translateX(${startOffset + dx}px)`;
+  });
+  const end = (e: PointerEvent) => {
+    if (!dragging) return;
+    dragging = false; track.classList.remove('nodrag-anim'); gallery.classList.remove('drag');
+    const dx = e.clientX - startX;
+    go(Math.abs(dx) > 50 ? index + (dx < 0 ? 1 : -1) : index);
+    play();
+  };
+  addEventListener('pointerup', end);
+  addEventListener('pointercancel', end);
+  addEventListener('resize', () => go(index));
+  gallery.addEventListener('mouseenter', () => clearInterval(timer));
+  gallery.addEventListener('mouseleave', play);
+  go(0); play();
+
+  // live-preview fallback (projects without a screenshot)
+  const fit = () => {
+    const s = gallery.querySelector<HTMLElement>('.stage');
+    const f = s?.querySelector('iframe');
+    if (s && f) f.style.transform = `scale(${s.clientWidth / 1280})`;
+  };
+  fit(); addEventListener('resize', fit); addEventListener('load', fit);
+
+  // ---- lightbox (click an image to zoom; arrows / Esc / click image = next) ----
+  const lb = document.getElementById('lb')!;
+  const lbImg = document.getElementById('lb-img') as HTMLImageElement;
+  const lbC = document.getElementById('lb-c')!;
+  let cur = 0;
+  const show = (i: number) => {
+    cur = ((i % links.length) + links.length) % links.length;
+    lbImg.src = links[cur].href;
+    lbC.textContent = `${cur + 1} / ${links.length}`;
+  };
+  const open = (i: number) => {
+    show(i); lb.hidden = false;
+    requestAnimationFrame(() => lb.classList.add('on'));
+    document.body.classList.add('menu-open');
+    document.getElementById('lb-x')?.focus();
+  };
+  const close = () => {
+    lb.classList.remove('on');
+    setTimeout(() => { lb.hidden = true; }, 300);
+    document.body.classList.remove('menu-open');
+  };
+  links.forEach((a, i) =>
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!moved) open(i);
+    })
+  );
+  const single = links.length < 2;
+  document.getElementById('lb-x')!.addEventListener('click', close);
+  document.getElementById('lb-prev')!.addEventListener('click', () => show(cur - 1));
+  document.getElementById('lb-next')!.addEventListener('click', () => show(cur + 1));
+  lbImg.addEventListener('click', () => (single ? close() : show(cur + 1)));
+  lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+  if (single) lb.classList.add('single');
+  addEventListener('keydown', (e) => {
+    if (lb.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight') show(cur + 1);
+    if (e.key === 'ArrowLeft') show(cur - 1);
+  });
+</script>

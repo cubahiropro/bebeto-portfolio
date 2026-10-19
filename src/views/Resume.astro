@@ -1,0 +1,145 @@
+---
+import Base from '../layouts/Base.astro';
+import Skills from '../components/Skills.astro';
+import Stack from '../components/Stack.astro';
+import Timeline from '../components/Timeline.astro';
+import Testimonials from '../components/Testimonials.astro';
+import GithubActivity from '../components/GithubActivity.astro';
+import { site as base } from '../data/site';
+import { getSite, getExperience, getEducation, getLanguages, getInterests, getGlance, getProfile, getAchievements } from '../i18n/data';
+import { langOf, t } from '../i18n';
+const lang = langOf(Astro.url);
+const site = getSite(lang);
+const experience = getExperience(lang);
+const education = getEducation(lang);
+const languages = getLanguages(lang);
+const interests = getInterests(lang);
+const glance = getGlance(lang);
+const profile = getProfile(lang);
+const achievements = getAchievements(lang);
+const spoken = languages.map((l) => l.name).join(', ');
+const tel = (n: string) => `tel:${n.replace(/\s/g, '')}`;
+
+// "At a glance" rows: a row only shows when it has content
+const glanceRows = [
+  [t(lang, 'resume.now'), glance.now],
+  [t(lang, 'resume.before'), glance.before],
+  [t(lang, 'resume.award'), glance.award],
+].filter(([, v]) => v);
+
+// Details grid next to the bio: a row only shows when it has content
+type Row = [string, string, string?, { text: string; href: string }[]?];
+const info: Row[] = [
+  [t(lang, 'info.city'), profile.city],
+  [t(lang, 'info.degree'), profile.degree],
+  [t(lang, 'info.languages'), spoken],
+  [t(lang, 'info.email'), site.email, `mailto:${site.email}`],
+  [t(lang, 'info.phone'), site.phones.join(', '), undefined, base.phones.map((n) => ({ text: n, href: tel(n) }))],
+  [t(lang, 'info.website'), profile.website.label, profile.website.href],
+  [t(lang, 'info.available'), profile.availableFor],
+].filter(([, v]) => v) as Row[];
+
+// The summary entry on the left: name, one-paragraph summary, and where to reach me
+const summary = [
+  { title: site.fullName, text: t(lang, 'resume.summaryText'), bullets: [site.location, ...base.phones, site.email] },
+];
+---
+<Base title={t(lang, 'nav.resume')}>
+  <section class="first">
+    <div class="wrap about2">
+      <div class="about2-side">
+        <div class="about-img">
+          <img class="imago" src="/images/portrait-2.jpg" alt={site.fullName} width="717" height="1080" loading="lazy" />
+        </div>
+        {glanceRows.length > 0 && (
+          <aside class="glance fade-up">
+            <h4>{t(lang, 'resume.glance')}</h4>
+            <dl>
+              {glanceRows.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+            </dl>
+          </aside>
+        )}
+      </div>
+
+      <div class="about2-body">
+        <h6 class="eyebrow" data-split>{t(lang, 'resume.about')}</h6><br />
+        <h2 class="big" data-split>{t(lang, 'resume.aboutTitle')}</h2>
+        <h3 class="headline fade-up" style="--d:.2s">{site.headline}</h3>
+        <p class="fade-up" style="--d:.3s">{t(lang, 'resume.p1')}</p>
+        <p class="fade-up" style="--d:.4s">{t(lang, 'resume.p2')}</p>
+        <dl class="info-grid fade-up" style="--d:.5s">
+          {info.map(([k, v, href, links]) => (
+            <div>
+              <dt>{k}</dt>
+              <dd>
+                {links
+                  ? links.map((l, i) => <>{i > 0 && <br />}<a href={l.href}>{l.text}</a></>)
+                  : href ? <a href={href}>{v}</a> : v}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <div class="fade-up btn-row" style="--d:.6s">
+          <a class="btn-link" href={base.cv} target="_blank" rel="noopener"><span>{t(lang, 'cv.view')}</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="resume">
+    <div class="wrap">
+      <div class="head">
+        <div class="l">
+          <h6 class="eyebrow" data-split>{t(lang, 'resume.eyebrow')}</h6><br />
+          <h2 data-split>{t(lang, 'resume.title')}</h2>
+        </div>
+      </div>
+      <div class="resume-cols">
+        <div>
+          <h4 class="col-title">{t(lang, 'resume.summary')}</h4>
+          <Timeline items={summary} />
+          <h4 class="col-title">{t(lang, 'resume.education')}</h4>
+          <Timeline items={education} />
+        </div>
+        <div>
+          <h4 class="col-title">{t(lang, 'resume.experience')}</h4>
+          <Timeline items={experience} />
+          {achievements.length > 0 && (
+            <>
+              <h4 class="col-title">{t(lang, 'resume.achievements')}</h4>
+              <Timeline items={achievements} />
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head">
+        <div class="l">
+          <h6 class="eyebrow" data-split>{t(lang, 'resume.skillsEyebrow')}</h6><br />
+          <h2 data-split>{t(lang, 'resume.skillsTitle')}</h2>
+        </div>
+      </div>
+      <div class="skills-grid">
+        <div>
+          <p class="fade-up" style="--d:.3s">{t(lang, 'resume.skillsText')}</p>
+          <ul class="tags-list fade-up" style="--d:.6s">
+            {interests.map((i) => <li>{i}</li>)}
+          </ul>
+          <h4 class="sub-title fade-up" style="--d:.7s">{t(lang, 'resume.languages')}</h4>
+          <div class="fade-up" style="--d:.8s"><Skills items={languages} /></div>
+        </div>
+        <div class="fade-up" style="--d:.9s">
+          <Stack />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <GithubActivity />
+
+  <Testimonials />
+</Base>

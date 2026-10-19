@@ -1,0 +1,18 @@
+---
+// A vertical timeline: dot, title, date pill, place, then bullets (or a single line of text).
+import type { Entry } from '../data/site';
+interface Props { items: Entry[] }
+const { items } = Astro.props;
+---
+<ol class="tl">
+  {items.map((e) => (
+    <li class="tl-item fade-up">
+      <span class="tl-dot" aria-hidden="true"></span>
+      <h3>{e.title}</h3>
+      {e.period && <span class="pill">{e.period}</span>}
+      {e.place && <p class="tl-sub">{e.place}</p>}
+      {e.text && <p class="tl-text">{e.text}</p>}
+      {e.bullets?.length ? <ul class="tl-list">{e.bullets.map((b) => <li>{b}</li>)}</ul> : null}
+    </li>
+  ))}
+</ol>

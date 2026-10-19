@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import Works from '../components/Works.astro';
+import { getShipped, getContributed } from '../i18n/data';
+import { langOf, t } from '../i18n';
+const lang = langOf(Astro.url);
+const shipped = getShipped(lang);
+const contributed = getContributed(lang);
+---
+<Base title={t(lang, 'portfolio.title')} description={t(lang, 'portfolio.metaDesc')}>
+  <div class="wrap page-title">
+    <h6 class="eyebrow" data-split>{t(lang, 'portfolio.eyebrow')}</h6><br />
+    <h1 data-split>{t(lang, 'portfolio.title')}</h1>
+  </div>
+
+  <section class="group" id="shipped">
+    <div class="wrap">
+      <div class="group-head">
+        <h2><span class="group-count">{String(shipped.length).padStart(2, '0')}</span> {t(lang, 'portfolio.shipped')}</h2>
+        <p>{t(lang, 'portfolio.shippedText')}</p>
+      </div>
+    </div>
+    <Works group="shipped" captions />
+  </section>
+
+  <section class="group" id="contributed">
+    <div class="wrap">
+      <div class="group-head">
+        <h2><span class="group-count">{String(contributed.length).padStart(2, '0')}</span> {t(lang, 'portfolio.contributed')}</h2>
+        <p>{t(lang, 'portfolio.contributedText')}</p>
+      </div>
+    </div>
+    <Works group="contributed" captions />
+  </section>
+</Base>

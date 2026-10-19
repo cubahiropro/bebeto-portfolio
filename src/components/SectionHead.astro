@@ -1,0 +1,11 @@
+---
+interface Props { eyebrow: string; title: string; text?: string }
+const { eyebrow, title, text } = Astro.props;
+---
+<div class="head">
+  <div class="l">
+    <h6 class="eyebrow" data-split>{eyebrow}</h6><br />
+    <h2 data-split>{title}</h2>
+  </div>
+  {text && <div class="r"><p class="fade-up" style="--d:.6s">{text}</p></div>}
+</div>

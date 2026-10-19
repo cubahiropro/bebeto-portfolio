@@ -1,0 +1,128 @@
+---
+// GitHub contributions calendar, drawn at build time (no third-party script runs in the visitor's browser).
+// Data comes from a public contributions API; the last good result is cached in src/data/github-contributions.json
+// so a build without internet still shows the table. Rebuild the site to refresh it.
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import net from 'node:net';
+net.setDefaultAutoSelectFamilyAttemptTimeout(500); // some networks stall on IPv6; try the next address sooner
+import SectionHead from './SectionHead.astro';
+import { langOf, t, dateLocale } from '../i18n';
+const lang = langOf(Astro.url);
+const loc = dateLocale(lang);
+
+const USER = 'cubahiropro';
+const CACHE = join(process.cwd(), 'src/data/github-contributions.json'); // project root, not the build output folder
+
+type Day = { date: string; count: number; level: number };
+let data: { total: Record<string, number>; contributions: Day[] } | null = null;
+try {
+  const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${USER}?y=last`, { signal: AbortSignal.timeout(10000) });
+  if (res.ok) {
+    data = await res.json();
+    writeFileSync(CACHE, JSON.stringify(data));
+  }
+} catch {}
+if (!data && existsSync(CACHE)) data = JSON.parse(readFileSync(CACHE, 'utf8'));
+
+const days: Day[] = data?.contributions ?? [];
+const total = days.reduce((n, d) => n + d.count, 0);
+
+// Arrange days into week columns (Sunday first), with blank cells before the first day.
+const weeks: (Day | null)[][] = [];
+if (days.length) {
+  const lead = new Date(days[0].date + 'T00:00:00Z').getUTCDay();
+  const cells: (Day | null)[] = [...Array(lead).fill(null), ...days];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+}
+// month labels above the first week that starts in a new month
+const months = weeks.map((w, i) => {
+  const first = w.find(Boolean) as Day | undefined;
+  if (!first) return '';
+  const m = new Date(first.date + 'T00:00:00Z').toLocaleString(loc, { month: 'short', timeZone: 'UTC' }).replace('.', '');
+  const prev = i ? (weeks[i - 1].find(Boolean) as Day | undefined) : undefined;
+  const pm = prev ? new Date(prev.date + 'T00:00:00Z').toLocaleString(loc, { month: 'short', timeZone: 'UTC' }).replace('.', '') : '';
+  return m !== pm ? m : '';
+});
+const label = (d: Day) =>
+  `${d.count} contribution${d.count === 1 ? '' : 's'} ${t(lang, 'gh.on')} ${new Date(d.date + 'T00:00:00Z').toLocaleDateString(loc, { dateStyle: 'medium', timeZone: 'UTC' })}`;
+const totalText = (n: number) => `${n} ${n === 1 ? t(lang, 'gh.total1') : t(lang, 'gh.totalN')}`;
+const labels = JSON.stringify({ loc, on: t(lang, 'gh.on'), total1: t(lang, 'gh.total1'), totalN: t(lang, 'gh.totalN'), live: t(lang, 'gh.live') });
+---
+<section class="gh" id="gh-root" data-user={USER} data-endpoint={import.meta.env.PUBLIC_GITHUB_CONTRIB_URL ?? ""} data-labels={labels}>
+  <div class="wrap">
+    <SectionHead eyebrow={t(lang, 'gh.eyebrow')} title={t(lang, 'gh.title')} text={days.length ? totalText(total) : t(lang, 'gh.unavailable')} />
+    {days.length > 0 && (
+      <div class="gh-scroll fade-up" role="img" aria-label={`${t(lang, 'gh.calendar')}: ${totalText(total)}`}>
+        <div class="gh-grid">
+          <div class="gh-months">{months.map((m) => <span>{m}</span>)}</div>
+          <div class="gh-weeks">
+            {weeks.map((w) => (
+              <div class="gh-week">
+                {w.map((d) => (d ? <i class={`c l${d.level}`} title={label(d)}></i> : <i class="c empty"></i>))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div class="gh-legend"><span class="gh-status" id="gh-status">{t(lang, 'gh.snapshot')}</span><span class="gh-sp"></span><span>{t(lang, 'gh.less')}</span><i class="c l0"></i><i class="c l1"></i><i class="c l2"></i><i class="c l3"></i><i class="c l4"></i><span>{t(lang, 'gh.more')}</span></div>
+      </div>
+    )}
+  </div>
+</section>
+
+<script>
+  // Live refresh: the table above is drawn at build time; here we ask for fresh data as soon as the page loads
+  // (and every 5 minutes while it stays open). The default source is a public API that caches GitHub for up to ~1 hour;
+  // set PUBLIC_GITHUB_CONTRIB_URL to your own worker (see workers/github-contributions.js) for true real time.
+  type Day = { date: string; count: number; level: number };
+  const root = document.getElementById('gh-root');
+  if (root) {
+    const user = root.dataset.user!;
+    const L = JSON.parse(root.dataset.labels || '{}');
+    const endpoint = root.dataset.endpoint || `https://github-contributions-api.jogruber.de/v4/${user}?y=last`;
+    const mon = (iso: string) => new Date(iso + 'T00:00:00Z').toLocaleString(L.loc, { month: 'short', timeZone: 'UTC' }).replace('.', '');
+    const label = (d: Day) =>
+      `${d.count} contribution${d.count === 1 ? '' : 's'} ${L.on} ${new Date(d.date + 'T00:00:00Z').toLocaleDateString(L.loc, { dateStyle: 'medium', timeZone: 'UTC' })}`;
+
+    const render = (days: Day[]) => {
+      const lead = new Date(days[0].date + 'T00:00:00Z').getUTCDay();
+      const cells: (Day | null)[] = [...Array(lead).fill(null), ...days];
+      const weeks: (Day | null)[][] = [];
+      for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+      const months = weeks.map((w, i) => {
+        const first = w.find(Boolean) as Day | undefined;
+        if (!first) return '';
+        const prev = i ? (weeks[i - 1].find(Boolean) as Day | undefined) : undefined;
+        return !prev || mon(first.date) !== mon(prev.date) ? mon(first.date) : '';
+      });
+      const m = root.querySelector('.gh-months');
+      const g = root.querySelector('.gh-weeks');
+      if (!m || !g) return;
+      m.innerHTML = months.map((x) => `<span>${x}</span>`).join('');
+      g.innerHTML = weeks
+        .map((w) => `<div class="gh-week">${w.map((d) => (d ? `<i class="c l${d.level}" title="${label(d)}"></i>` : '<i class="c empty"></i>')).join('')}</div>`)
+        .join('');
+      const total = days.reduce((n, d) => n + d.count, 0);
+      const p = root.querySelector('.head .r p');
+      if (p) p.textContent = `${total} ${total === 1 ? L.total1 : L.totalN}`;
+    };
+
+    const status = document.getElementById('gh-status');
+    const refresh = async () => {
+      try {
+        const res = await fetch(endpoint, { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.contributions?.length) return;
+        render(data.contributions);
+        if (status) status.textContent = `${L.live} ${new Date().toLocaleTimeString(L.loc, { hour: '2-digit', minute: '2-digit' })}`;
+      } catch {
+        /* keep the build-time snapshot */
+      }
+    };
+    const scroller = root.querySelector<HTMLElement>('.gh-scroll');
+    if (scroller) scroller.scrollLeft = scroller.scrollWidth; // narrow screens: start on the latest weeks
+    refresh();
+    setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 5 * 60 * 1000);
+  }
+</script>

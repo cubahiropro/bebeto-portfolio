@@ -1,0 +1,31 @@
+---
+import { getPosts } from '../i18n/posts';
+import { langOf, link, t, dateLocale } from '../i18n';
+interface Props { limit?: number }
+const { limit } = Astro.props;
+const lang = langOf(Astro.url);
+let posts = await getPosts(lang);
+if (limit) posts = posts.slice(0, limit);
+const fmt = (d: Date) => ({
+  day: String(d.getDate()).padStart(2, '0'),
+  my: d.toLocaleString(dateLocale(lang), { month: 'long', year: 'numeric' }),
+});
+---
+<div>
+  {posts.map((p, i) => {
+    const d = fmt(p.data.date);
+    return (
+      <div class={`blog-row${i % 2 === 1 ? ' flip' : ''}`}>
+        <a class="img" href={link(lang, `/blog/${p.slug}`)}><span><img src={p.data.image} alt="" loading="lazy" /></span></a>
+        <div class="content">
+          <div class="date"><h1>{d.day}</h1><h6>{d.my}</h6></div>
+          <div class="cont">
+            <h5>{p.data.title}</h5>
+            <p>{p.data.description}</p>
+            <a class="btn-link" href={link(lang, `/blog/${p.slug}`)}><span>{t(lang, 'blog.read')}</span></a>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div>

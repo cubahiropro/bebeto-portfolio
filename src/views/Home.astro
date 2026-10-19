@@ -1,0 +1,79 @@
+---
+import Base from '../layouts/Base.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Services from '../components/Services.astro';
+import Stack from '../components/Stack.astro';
+import Works from '../components/Works.astro';
+import PostList from '../components/PostList.astro';
+import Testimonials from '../components/Testimonials.astro';
+import { site as base } from '../data/site';
+import { getSite } from '../i18n/data';
+import { langOf, link, t } from '../i18n';
+const lang = langOf(Astro.url);
+const site = getSite(lang);
+---
+<Base>
+  <link slot="head" rel="preload" as="image" href="/images/portrait-1.jpg" fetchpriority="high" />
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-wrap">
+        <div class="hero-mobile">
+          <h1>{site.name}</h1>
+          <h6>{site.fullName} · {site.role}</h6>
+        </div>
+        <div class="hero-img">
+          <img class="imago" src="/images/portrait-1.jpg" alt={site.fullName} width="622" height="1078" fetchpriority="high" decoding="async" />
+        </div>
+        <div class="hero-cont">
+          <div class="hero-cont-abs">
+            <h1 data-split class="name-desktop">{site.name}</h1>
+            <h6 data-split class="name-desktop">{site.fullName} · {site.role}</h6>
+            <div class="hero-text"><p data-split="txt">{site.tagline}</p></div>
+            <div class="btn-wrap hero-ctas">
+              <a class="btn-link" href={link(lang, '/portfolio')}><span>{t(lang, 'hero.work')}</span></a>
+              <a class="btn-link" href={site.cv} target="_blank" rel="noopener"><span>{t(lang, 'cv.view')}</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <SectionHead eyebrow={t(lang, 'home.services.eyebrow')} title={t(lang, 'home.services.title')} text={site.bio} />
+      <Services />
+    </div>
+  </section>
+
+  <section class="future">
+    <div class="wrap">
+      <h6 class="eyebrow" data-split>{t(lang, 'home.future.eyebrow')}</h6>
+      <h2 data-split>{t(lang, 'home.future.title')}</h2>
+      <div class="future-cols">
+        <div class="fade-up">
+          <p>{t(lang, 'home.future.p')}</p>
+          <div style="margin-top:20px"><a class="btn-link auto" href={link(lang, '/contact')}><span>{site.email}</span></a></div>
+        </div>
+        <Stack />
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-bottom:0">
+    <div class="wrap">
+      <SectionHead eyebrow={t(lang, 'home.work.eyebrow')} title={t(lang, 'home.work.title')} text={t(lang, 'home.work.text')} />
+    </div>
+    <Works carousel />
+    <div class="more"><a class="btn-link auto" href={link(lang, '/portfolio')}><span>{t(lang, 'home.work.all')}</span></a></div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <SectionHead eyebrow={t(lang, 'home.news.eyebrow')} title={t(lang, 'home.news.title')} />
+      <PostList limit={2} />
+    </div>
+  </section>
+
+  <Testimonials />
+</Base>

@@ -1,0 +1,117 @@
+---
+import Base from '../layouts/Base.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Testimonials from '../components/Testimonials.astro';
+import { getPosts } from '../i18n/posts';
+import { langOf, link, t, dateLocale } from '../i18n';
+
+const lang = langOf(Astro.url);
+const loc = dateLocale(lang);
+const posts = await getPosts(lang);
+const month = (d: Date) => d.toLocaleString(loc, { month: 'long', year: 'numeric' });
+const uniq = (a: string[]) => [...new Set(a)];
+const months = uniq(posts.map((p) => month(p.data.date)));
+const categories = uniq(posts.map((p) => p.data.category));
+const tags = uniq(posts.flatMap((p) => p.data.tags));
+---
+<Base title={t(lang, 'nav.blog')}>
+  <section class="blog first">
+    <div class="wrap">
+      <SectionHead eyebrow={t(lang, 'blog.eyebrow')} title={t(lang, 'blog.title')} />
+      <div class="blog-grid">
+        <div id="posts">
+          {posts.map((p) => (
+            <article
+              class="item fade-up"
+              data-cat={p.data.category}
+              data-tags={p.data.tags.join('|')}
+              data-month={month(p.data.date)}
+              data-text={`${p.data.title} ${p.data.description}`.toLowerCase()}
+            >
+              <div class="post-img">
+                <a href={link(lang, `/blog/${p.slug}`)}><img src={p.data.image} alt="" loading="lazy" /></a>
+                <div class="date">
+                  <a href={link(lang, `/blog/${p.slug}`)}><span>{p.data.date.toLocaleString(loc, { month: 'short' }).replace('.', '')} <i>{p.data.date.getDate()}</i></span></a>
+                </div>
+              </div>
+              <div class="post-cont">
+                <div class="cat-row"><a href={link(lang, '/blog')}>{t(lang, 'blog.blog')}</a><div class="divider"></div><div>{p.data.category}</div></div>
+                <h4><a href={link(lang, `/blog/${p.slug}`)}>{p.data.title}</a></h4>
+                <p>{p.data.description}</p>
+              </div>
+            </article>
+          ))}
+          <p class="no-posts" id="no-posts" hidden>{t(lang, 'blog.none')}</p>
+        </div>
+
+        <aside class="blog-sidebar">
+          <div class="widget search">
+            <form id="search" role="search">
+              <input type="text" name="q" placeholder={t(lang, 'blog.search')} aria-label={t(lang, 'blog.searchLabel')} autocomplete="off" />
+              <button type="submit" aria-label={t(lang, 'blog.searchLabel')}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+            </form>
+          </div>
+          <div class="widget">
+            <div class="widget-title"><h5>{t(lang, 'blog.recent')}</h5></div>
+            <ul class="recent">
+              {posts.slice(0, 3).map((p) => (
+                <li><div class="thum"><img src={p.data.image} alt="" loading="lazy" /></div><a href={link(lang, `/blog/${p.slug}`)}>{p.data.title}</a></li>
+              ))}
+            </ul>
+          </div>
+          <div class="widget">
+            <div class="widget-title"><h5>{t(lang, 'blog.archives')}</h5></div>
+            <ul>{months.map((m) => <li><a href="#" data-filter="month" data-value={m}>{m}</a></li>)}</ul>
+          </div>
+          <div class="widget">
+            <div class="widget-title"><h5>{t(lang, 'blog.categories')}</h5></div>
+            <ul>{categories.map((c) => <li><a href="#" data-filter="cat" data-value={c}><i>›</i>{c}</a></li>)}</ul>
+          </div>
+          <div class="widget">
+            <div class="widget-title"><h5>{t(lang, 'blog.tags')}</h5></div>
+            <ul class="tags">{tags.map((tag) => <li><a href="#" data-filter="tag" data-value={tag}>{tag}</a></li>)}</ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <Testimonials />
+</Base>
+
+<script>
+  // Sidebar search + category / archive / tag filters (click the same one again to clear).
+  const items = [...document.querySelectorAll<HTMLElement>('#posts .item')];
+  const none = document.getElementById('no-posts')!;
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-filter]')];
+  let active: HTMLAnchorElement | null = null;
+  let q = '';
+
+  const apply = () => {
+    let shown = 0;
+    items.forEach((it) => {
+      let ok = !q || (it.dataset.text || '').includes(q);
+      if (ok && active) {
+        const v = active.dataset.value!;
+        const t = active.dataset.filter;
+        ok = t === 'cat' ? it.dataset.cat === v : t === 'month' ? it.dataset.month === v : (it.dataset.tags || '').split('|').includes(v);
+      }
+      it.hidden = !ok;
+      if (ok) shown++;
+    });
+    none.hidden = shown > 0;
+    links.forEach((l) => l.classList.toggle('on', l === active));
+  };
+
+  links.forEach((l) =>
+    l.addEventListener('click', (e) => {
+      e.preventDefault();
+      active = active === l ? null : l;
+      apply();
+    })
+  );
+  const form = document.getElementById('search') as HTMLFormElement;
+  const input = form.querySelector('input')!;
+  input.addEventListener('input', () => { q = input.value.trim().toLowerCase(); apply(); });
+  form.addEventListener('submit', (e) => e.preventDefault());
+</script>

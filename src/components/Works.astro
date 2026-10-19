@@ -1,0 +1,90 @@
+---
+import { projectImage } from '../data/site';
+import { getProjects } from '../i18n/data';
+import { langOf, link, t } from '../i18n';
+interface Props { carousel?: boolean; group?: 'shipped' | 'contributed'; captions?: boolean }
+const { carousel = false, group, captions = false } = Astro.props;
+const lang = langOf(Astro.url);
+const all = getProjects(lang);
+const list = group ? all.filter((p) => p.group === group) : all;
+---
+<div class={carousel ? 'portfolio-wrap' : 'wrap'} data-carousel={carousel ? '' : undefined}>
+  <div class={carousel ? 'track' : 'grid-3'}>
+    {list.map((p) => (
+      <a class="item" href={link(lang, `/portfolio/${p.slug}`)} draggable="false" aria-label={`${lang === 'fr' ? 'Voir' : 'View'} ${p.title}`}>
+        <div class="img-block">
+          <div class="wrapper-img">
+            <div class="stage">
+              {p.images.length
+                ? <img class={"art" in p && p.art ? "full" : ""} src={projectImage(p.images[0])} alt={`${p.title} preview`} loading="lazy" draggable="false" />
+                : <iframe src={p.live} title={`${p.title} live preview`} loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin"></iframe>}
+            </div>
+          </div>
+          <div class="title-block"><h4>{p.title}</h4><p>{p.category}{p.group === 'contributed' ? ` · ${t(lang, 'portfolio.contributed')}` : ''}</p></div>
+        </div>
+        {captions && (
+          <div class="case-cap">
+            <h3>{p.title}</h3>
+            <p>{p.tagline}</p>
+            <span class="case-tags">{p.built.split(", ").slice(0, 3).join(" · ")}</span>
+          </div>
+        )}
+      </a>
+    ))}
+  </div>
+</div>
+<script>
+  // Projects without a screenshot fall back to a scaled live preview of the site.
+  const fit = () =>
+    document.querySelectorAll<HTMLElement>('.wrapper-img .stage').forEach((s) => {
+      const f = s.querySelector('iframe');
+      if (f && s.clientWidth) f.style.transform = `scale(${s.clientWidth / 1280})`;
+    });
+  fit();
+  addEventListener('resize', fit);
+  addEventListener('load', fit);
+
+  // Draggable, auto-playing carousel (like the demo's owl-carousel).
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((wrap) => {
+    const track = wrap.querySelector<HTMLElement>('.track')!;
+    const items = [...track.children] as HTMLElement[];
+    let index = 0, startX = 0, startOffset = 0, dragging = false, moved = false, timer: number;
+
+    const perView = () => (innerWidth <= 767 ? 1 : innerWidth <= 991 ? 2 : 3);
+    const step = () => items[0].getBoundingClientRect().width + 15;
+    const max = () => Math.max(0, items.length - perView());
+    const go = (i: number) => {
+      index = Math.min(Math.max(i, 0), max());
+      track.style.transform = `translateX(${-index * step()}px)`;
+    };
+    const play = () => {
+      clearInterval(timer);
+      timer = window.setInterval(() => go(index >= max() ? 0 : index + 1), 4000);
+    };
+
+    wrap.addEventListener('pointerdown', (e) => {
+      dragging = true; moved = false; startX = e.clientX; startOffset = -index * step();
+      track.classList.add('nodrag-anim'); wrap.classList.add('drag');
+    });
+    addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 5) moved = true;
+      track.style.transform = `translateX(${startOffset + dx}px)`;
+    });
+    const end = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false; track.classList.remove('nodrag-anim'); wrap.classList.remove('drag');
+      const dx = e.clientX - startX;
+      go(Math.abs(dx) > 60 ? index + (dx < 0 ? 1 : -1) : index);
+      play();
+    };
+    addEventListener('pointerup', end);
+    addEventListener('pointercancel', end);
+    wrap.addEventListener('click', (e) => { if (moved) e.preventDefault(); }, true);
+    wrap.addEventListener('mouseenter', () => clearInterval(timer));
+    wrap.addEventListener('mouseleave', play);
+    addEventListener('resize', () => go(index));
+    go(0); play();
+  });
+</script>

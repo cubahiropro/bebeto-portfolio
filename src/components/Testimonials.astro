@@ -1,0 +1,113 @@
+---
+import { clients } from '../data/site';
+import { getTestimonials } from '../i18n/data';
+import { langOf, t } from '../i18n';
+const lang = langOf(Astro.url);
+const testimonials = getTestimonials(lang);
+---
+<section class="testi">
+  <div class="bg"><img src="/images/work-2.jpg" alt="" loading="lazy" /></div>
+  <div class="wrap">
+    <div class="card" id="testi-card">
+      <h3>{t(lang, 'testi.title')}</h3>
+      <div class="slides">
+        {testimonials.map((x, i) => (
+          <figure class={`slide${i === 0 ? ' on' : ''}`} aria-hidden={i === 0 ? 'false' : 'true'}>
+            <blockquote><p>{x.text}</p></blockquote>
+            <figcaption class="who">
+              <img class="av" src={`/images/people/${x.photo}.webp`} alt={x.name} width="55" height="55" loading="lazy" />
+              <div><b>{x.name}</b><small>{x.role}</small></div>
+            </figcaption>
+            <svg class="quote" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21c0-5 1-9 5-12l2 2c-2 2-3 4-3 6h4v6H3zm11 0c0-5 1-9 5-12l2 2c-2 2-3 4-3 6h4v6h-8z"/></svg>
+          </figure>
+        ))}
+      </div>
+      <div class="dots" role="tablist" aria-label={t(lang, 'testi.choose')}>
+        {testimonials.map((x, i) => <button type="button" class={i === 0 ? 'on' : ''} aria-label={`${t(lang, 'testi.show')} ${x.name}`} data-i={i}></button>)}
+      </div>
+    </div>
+  </div>
+</section>
+<div class="clients" aria-label={t(lang, 'clients.label')}>
+  <div class="wrap">
+    <div class="clients-col">
+      <div class="owl" id="clients-owl">
+        <div class="owl-track">
+          {[0, 1].map((copy) =>
+            clients.map((c) => (
+              <div class="owl-cell" aria-hidden={copy ? 'true' : undefined}>
+                {c.href
+                  ? <a href={c.href} target="_blank" rel="noopener" tabindex={copy ? -1 : undefined} aria-label={c.name} draggable="false"><img src={c.logo} alt={copy ? '' : c.name} loading="lazy" draggable="false" /></a>
+                  : <img src={c.logo} alt={copy ? '' : c.name} loading="lazy" draggable="false" />}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Rotating testimonials (fade), pauses on hover; dots jump to a slide.
+  const card = document.getElementById('testi-card');
+  if (card) {
+    const slides = [...card.querySelectorAll<HTMLElement>('.slide')];
+    const dots = [...card.querySelectorAll<HTMLButtonElement>('.dots button')];
+    let cur = 0, timer: number;
+    const show = (i: number) => {
+      cur = (i + slides.length) % slides.length;
+      slides.forEach((s, k) => { s.classList.toggle('on', k === cur); s.setAttribute('aria-hidden', String(k !== cur)); });
+      dots.forEach((d, k) => d.classList.toggle('on', k === cur));
+    };
+    const play = () => { clearInterval(timer); timer = window.setInterval(() => show(cur + 1), 6000); };
+    dots.forEach((d) => d.addEventListener('click', () => { show(Number(d.dataset.i)); play(); }));
+    card.addEventListener('mouseenter', () => clearInterval(timer));
+    card.addEventListener('mouseleave', play);
+    play();
+  }
+
+  // Client logos: slides one logo at a time and loops (4 per view on desktop, 3 on tablet, 2 on phones),
+  // like the demo's owl-carousel. Draggable. The second copy of the list makes the loop seamless.
+  const owl = document.getElementById('clients-owl');
+  if (owl) {
+    const track = owl.querySelector<HTMLElement>('.owl-track')!;
+    const cells = [...track.children] as HTMLElement[];
+    const count = cells.length / 2;
+    const gap = 10;
+    let index = 0, timer: number, dragging = false, startX = 0, startOff = 0, moved = false;
+    const perView = () => (innerWidth >= 1000 ? 4 : innerWidth >= 600 ? 3 : 2);
+    const layout = () => {
+      const w = (owl.clientWidth - gap * (perView() - 1)) / perView();
+      cells.forEach((c) => (c.style.flex = `0 0 ${w}px`));
+      track.style.transition = 'none';
+      track.style.transform = `translateX(${-index * (w + gap)}px)`;
+    };
+    const step = () => cells[0].getBoundingClientRect().width + gap;
+    const go = (i: number) => {
+      index = i;
+      track.style.transition = '';
+      track.style.transform = `translateX(${-index * step()}px)`;
+    };
+    track.addEventListener('transitionend', () => {
+      if (index >= count) { index -= count; track.style.transition = 'none'; track.style.transform = `translateX(${-index * step()}px)`; }
+      if (index < 0) { index += count; track.style.transition = 'none'; track.style.transform = `translateX(${-index * step()}px)`; }
+    });
+    const play = () => { clearInterval(timer); timer = window.setInterval(() => go(index + 1), 3000); };
+    owl.addEventListener('pointerdown', (e) => { dragging = true; moved = false; startX = e.clientX; startOff = -index * step(); track.style.transition = 'none'; owl.classList.add('drag'); });
+    addEventListener('pointermove', (e) => { if (!dragging) return; const dx = e.clientX - startX; if (Math.abs(dx) > 5) moved = true; track.style.transform = `translateX(${startOff + dx}px)`; });
+    const end = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false; owl.classList.remove('drag');
+      const dx = e.clientX - startX;
+      if (index === 0 && dx > 40) { index = count; track.style.transform = `translateX(${-index * step()}px)`; void track.offsetWidth; }
+      go(Math.abs(dx) > 40 ? index + (dx < 0 ? 1 : -1) : index);
+      play();
+    };
+    addEventListener('pointerup', end);
+    addEventListener('pointercancel', end);
+    owl.addEventListener('click', (e) => { if (moved) e.preventDefault(); }, true);
+    addEventListener('resize', layout);
+    layout();
+    play();
+  }
+</script>

@@ -1,0 +1,149 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Logo from '../components/Logo.astro';
+import MobileBar from '../components/MobileBar.astro';
+import '../styles/global.css';
+import { site } from '../data/site';
+import { getSite } from '../i18n/data';
+import { langOf, otherLangPath } from '../i18n';
+
+interface Props { title?: string; description?: string }
+const lang = langOf(Astro.url);
+const S = getSite(lang);
+const { title, description = S.bio } = Astro.props;
+const full = title ? `${title} — ${site.name}` : `${site.name} — ${S.role}`;
+const here = Astro.url.pathname;
+const enHref = lang === 'en' ? here : otherLangPath('en', here);
+const frHref = lang === 'fr' ? here : otherLangPath('fr', here);
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <title>{full}</title>
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
+    <link rel="alternate" hreflang="en" href={enHref} />
+    <link rel="alternate" hreflang="fr" href={frHref} />
+    <meta property="og:title" content={full} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/og.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" />
+    <slot name="head" />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      (function () {
+        var t;
+        try { t = localStorage.getItem('theme'); } catch (e) {}
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = t;
+        // Full preloader only on the first page of a visit; later pages fade in quickly.
+        try {
+          if (sessionStorage.getItem('seen')) document.documentElement.classList.add('seen');
+          else sessionStorage.setItem('seen', '1');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="preloader" aria-hidden="true"><Logo full /></div>
+    <Header />
+    <main><slot /></main>
+    <Footer />
+    <MobileBar />
+    <script>
+      // ---- preloader: wait for fonts + first paint, never for slow third-party iframes ----
+      const pre = document.getElementById('preloader');
+      let hidden = false;
+      const hidePre = () => {
+        if (hidden) return;
+        hidden = true;
+        pre?.classList.add('done');
+        kickReveal();
+      };
+      const quick = document.documentElement.classList.contains('seen');
+      const fonts = (document as any).fonts?.ready ?? Promise.resolve();
+      Promise.race([fonts, new Promise((r) => setTimeout(r, 1200))]).then(() =>
+        setTimeout(hidePre, quick ? 0 : 350)
+      );
+      setTimeout(hidePre, 1600); // hard cap
+      addEventListener('pageshow', (e) => { if (e.persisted) hidePre(); }); // back/forward cache
+
+      // ---- split text into characters (like the demo's Splitting.js) ----
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const split = (el: HTMLElement) => {
+        const text = (el.textContent || '').trim();
+        el.setAttribute('aria-label', text);
+        el.textContent = '';
+        let i = 0;
+        const words = text.split(/\s+/);
+        words.forEach((w, wi) => {
+          const word = document.createElement('span');
+          word.className = 'word';
+          word.setAttribute('aria-hidden', 'true');
+          [...w].forEach((c) => {
+            const ch = document.createElement('span');
+            ch.className = 'char';
+            ch.style.setProperty('--i', String(i++));
+            ch.textContent = c;
+            word.appendChild(ch);
+          });
+          el.appendChild(word);
+          if (wi < words.length - 1) {
+            const ws = document.createElement('span');
+            ws.className = 'ws';
+            ws.setAttribute('aria-hidden', 'true');
+            el.appendChild(ws);
+            i++;
+          }
+        });
+        el.classList.add('splitting');
+        if (el.dataset.split === 'txt') el.classList.add('txt');
+      };
+      if (!reduce) document.querySelectorAll<HTMLElement>('[data-split]').forEach(split);
+
+      // ---- reveal on scroll (like WOW.js, offset 100). Plain scroll check, so nothing can get stuck
+      //      invisible near the bottom of short pages the way an IntersectionObserver margin can. ----
+      let pending = [...document.querySelectorAll<HTMLElement>('[data-split], .fade-up, .imago, .bar')];
+      let ready = false;
+      const reveal = () => {
+        if (!ready) return;
+        const vh = innerHeight;
+        const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
+        pending = pending.filter((el) => {
+          const r = el.getBoundingClientRect();
+          if (!r.width && !r.height) return true; // display:none (e.g. desktop-only title on mobile)
+          if (r.bottom <= 0) { // already scrolled past (e.g. jumped down the page): show without animating
+            el.classList.add('animated');
+            if (el.classList.contains('bar')) el.classList.add('in');
+            return false;
+          }
+          const inView = r.top < vh - 100 && r.bottom > 0;
+          const bottomFallback = atBottom && r.top < vh && r.bottom > 0;
+          if (!inView && !bottomFallback) return true;
+          el.classList.add('animated');
+          if (el.classList.contains('bar')) el.classList.add('in');
+          return false;
+        });
+        if (!pending.length) removeEventListener('scroll', reveal);
+      };
+      function kickReveal() {
+        ready = true;
+        reveal();
+      }
+      addEventListener('scroll', reveal, { passive: true });
+      addEventListener('resize', reveal);
+      addEventListener('load', reveal);
+      setTimeout(kickReveal, 2600); // safety: if the preloader never reports, still reveal
+    </script>
+  </body>
+</html>

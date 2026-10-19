@@ -1,0 +1,25 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import BackLink from '../components/BackLink.astro';
+import { getPosts } from '../i18n/posts';
+import { langOf, link, t, dateLocale } from '../i18n';
+
+interface Props { slug: string }
+const { slug } = Astro.props;
+const lang = langOf(Astro.url);
+const post = (await getPosts(lang)).find((p) => p.slug === slug)!;
+const { Content } = await render(post);
+---
+<Base title={post.data.title} description={post.data.description}>
+  <section class="first">
+    <div class="wrap prose">
+      <BackLink href={link(lang, '/blog')} label={t(lang, 'blog.back')} />
+      <div class="cover"><img src={post.data.image} alt="" /></div>
+      <span class="eyebrow">{post.data.date.toLocaleDateString(dateLocale(lang), { dateStyle: 'long' })} · {post.data.category}</span>
+      <h1>{post.data.title}</h1>
+      <Content />
+      <a class="btn-link auto" href={link(lang, '/blog')}><span>← {t(lang, 'blog.back')}</span></a>
+    </div>
+  </section>
+</Base>

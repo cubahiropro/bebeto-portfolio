@@ -1,0 +1,48 @@
+---
+// Shown by the host for any address that does not exist (it serves dist/404.html).
+// One file for both languages: the page picks French when the missing address started with /fr.
+import Base from '../layouts/Base.astro';
+const art = (name: string) => encodeURI(`/images/svg/${name}.svg`);
+---
+<Base title="Page not found" description="This page does not exist or has moved.">
+  <meta slot="head" name="robots" content="noindex" />
+  <section class="first nf">
+    <div class="wrap nf-grid">
+      <div class="nf-text">
+        <div data-lang="en">
+          <h6 class="eyebrow">Error 404</h6><br />
+          <h1>Page not found</h1>
+          <p class="lead-line">The page you are looking for does not exist, or it has moved.</p>
+          <div class="nf-actions">
+            <a class="btn-link auto" href="/"><span>Back to home</span></a>
+            <a class="btn-link auto" href="/portfolio"><span>See my work</span></a>
+            <a class="btn-link auto" href="/contact"><span>Contact me</span></a>
+          </div>
+        </div>
+        <div data-lang="fr" hidden>
+          <h6 class="eyebrow">Erreur 404</h6><br />
+          <h1>Page introuvable</h1>
+          <p class="lead-line">La page que vous cherchez n’existe pas, ou elle a été déplacée.</p>
+          <div class="nf-actions">
+            <a class="btn-link auto" href="/fr/"><span>Retour à l’accueil</span></a>
+            <a class="btn-link auto" href="/fr/portfolio"><span>Voir mes projets</span></a>
+            <a class="btn-link auto" href="/fr/contact"><span>Me contacter</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nf-art">
+        <img class="lt" src={art('not found light')} alt="" width="672" height="738" loading="lazy" decoding="async" />
+        <img class="dk" src={art('not found dark')} alt="" width="672" height="738" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </section>
+</Base>
+<script>
+  // French visitors (addresses under /fr) get the French text
+  if (/^\/fr(\/|$)/.test(location.pathname)) {
+    document.documentElement.lang = 'fr';
+    document.title = 'Page introuvable — Bebeto';
+    document.querySelector('[data-lang="en"]')?.setAttribute('hidden', '');
+    document.querySelector('[data-lang="fr"]')?.removeAttribute('hidden');
+  }
+</script>

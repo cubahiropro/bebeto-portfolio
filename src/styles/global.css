@@ -4,7 +4,7 @@
   --white: #ffffff;      /* surfaces: header, footer, menu, inputs */
   --ink: #18191d;        /* headings */
   --dark: #24252b;
-  --text: #868a9b;
+  --text: #646a7e;      /* 4.9:1 on the page, 5.4:1 on white: readable in sunlight */
   --line: #e4e6ec;
   --card: #ffffff;       /* white cards (services, testimonial) */
   --card-ink: #18191d;
@@ -23,6 +23,7 @@
   --white: #212228;
   --ink: #ffffff;
   --line: #2e3037;
+  --text: #9498a8;
   --tile: #101114;
   --tile-a: #2c2e35;
   --tile-b: #131417;

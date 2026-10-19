@@ -3,9 +3,9 @@ import Base from '../layouts/Base.astro';
 import { site } from '../data/site';
 import { langOf, t } from '../i18n';
 const lang = langOf(Astro.url);
-// Optional: set PUBLIC_FORM_ENDPOINT in .env (e.g. a Formspree URL) to send messages straight from the page.
-// Without it, the form opens the visitor's email app with the message already written, so it always works.
-const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT ?? '';
+// Messages go to the inbox through FormSubmit (free, no account for the visitor). Set PUBLIC_FORM_ENDPOINT to use another service.
+// If sending fails, the form falls back to opening the visitor's email app with the message already written.
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || `https://formsubmit.co/ajax/${site.email}`;
 const wa = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(t(lang, 'contact.waText'))}`;
 const tel = (n: string) => `tel:${n.replace(/\s/g, '')}`;
 const labels = JSON.stringify({
@@ -34,7 +34,9 @@ const labels = JSON.stringify({
         <input type="email" name="email" placeholder={t(lang, 'form.email')} autocomplete="email" required />
         <input type="text" name="subject" placeholder={t(lang, 'form.subject')} />
         <textarea name="message" placeholder={t(lang, 'form.message')} required></textarea>
-        <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp" />
+        <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_captcha" value="false" />
         <button class="send" type="submit">{t(lang, 'form.send')}</button>
         <p class="form-note" id="form-note" role="status" aria-live="polite"></p>
       </form>
@@ -50,12 +52,18 @@ const labels = JSON.stringify({
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const data = new FormData(form);
-      if (data.get('company')) return; // honeypot: bots fill this, people never see it
+      if (data.get('_honey')) return; // honeypot: bots fill this, people never see it
       const name = String(data.get('name') || '').trim();
       const email = String(data.get('email') || '').trim();
       const subject = String(data.get('subject') || '').trim() || `${L.defaultSubject} ${name}`;
       const message = String(data.get('message') || '').trim();
       const endpoint = form.dataset.endpoint;
+      data.set('_subject', subject);
+      data.set('_replyto', email);
+      const mailFallback = () => {
+        const body = `${message}\n\n— ${name} (${email})`;
+        location.href = `mailto:${form.dataset.to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      };
       const btn = form.querySelector('button')!;
 
       if (endpoint) {
@@ -63,11 +71,13 @@ const labels = JSON.stringify({
         note.textContent = L.sending;
         try {
           const res = await fetch(endpoint, { method: 'POST', headers: { Accept: 'application/json' }, body: data });
-          if (!res.ok) throw new Error(String(res.status));
+          const out = await res.json().catch(() => ({}));
+          if (!res.ok || out.success === 'false' || out.success === false) throw new Error(String(res.status));
           form.reset();
           note.textContent = L.sent;
         } catch {
           note.textContent = `${L.failed} ${form.dataset.to}.`;
+          mailFallback();
         } finally {
           btn.removeAttribute('disabled');
         }
@@ -75,8 +85,7 @@ const labels = JSON.stringify({
       }
 
       // No form service configured: open the visitor's email app with everything filled in.
-      const body = `${message}\n\n— ${name} (${email})`;
-      location.href = `mailto:${form.dataset.to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      mailFallback();
       note.textContent = `${L.mailOpen} ${form.dataset.to}.`;
     });
   }

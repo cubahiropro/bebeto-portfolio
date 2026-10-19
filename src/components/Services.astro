@@ -1,7 +1,10 @@
 ---
 import { getServices } from '../i18n/data';
 import { langOf } from '../i18n';
-const services = getServices(langOf(Astro.url));
+interface Props { only?: number[] }
+const { only } = Astro.props;
+const all = getServices(langOf(Astro.url));
+const services = only ? only.map((i) => all[i]) : all;
 ---
 <div class="services-grid">
   {services.map((s, i) => (

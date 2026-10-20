@@ -61,7 +61,7 @@ export const skills = [
 export const stack = [
   { group: 'Mobile', items: ['Flutter'] },
   { group: 'Web', items: ['Astro', 'Angular', 'JavaScript'] },
-  { group: 'Back end', items: ['Django', 'PostgreSQL', 'Node.js', 'Python'] },
+  { group: 'Back end', items: ['Django (Python)', 'PostgreSQL', 'Node.js'] },
   { group: 'Design', items: ['UI/UX', 'Graphic design', 'Figma', 'Photoshop', 'Illustrator'] },
   { group: 'Tools', items: ['Git', 'Docker', 'Linux'] },
   { group: 'Learning', items: ['Machine learning', 'Training models'] },

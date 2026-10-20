@@ -53,7 +53,7 @@ export const fr = {
   stack: [
     { group: 'Mobile', items: ['Flutter'] },
     { group: 'Web', items: ['Astro', 'Angular', 'JavaScript'] },
-    { group: 'Back-end', items: ['Django', 'PostgreSQL', 'Node.js', 'Python'] },
+    { group: 'Back-end', items: ['Django (Python)', 'PostgreSQL', 'Node.js'] },
     { group: 'Design', items: ['UI/UX', 'Design graphique', 'Figma', 'Photoshop', 'Illustrator'] },
     { group: 'Outils', items: ['Git', 'Docker', 'Linux'] },
     { group: 'En apprentissage', items: ['Apprentissage automatique', 'Entraînement de modèles'] },

@@ -132,6 +132,7 @@ export type Project = {
   built: string;
   result: string;
   live: string;
+  status: 'live' | 'built' | 'apk'; // live: online; built: finished, not deployed yet; apk: Android app built, not on a store yet
   images: string[];
 };
 
@@ -148,6 +149,7 @@ export const projects: Project[] = [
     built: 'Astro',
     result: 'Renters can browse verified apartments and villas, see transparent monthly prices in US dollars and book online, in both cities.',
     live: 'https://thehaven-online.com',
+    status: 'live',
     images: ['thehaven-online'],
   },
   {
@@ -161,6 +163,7 @@ export const projects: Project[] = [
     built: 'Flutter, Python, TensorFlow Lite, scikit-learn',
     result: 'Tasks, expenses, mood, notes, health, goals and sleep live in one app that works fully offline, with insights generated on the phone itself, so no personal data leaves the device.',
     live: '',
+    status: 'apk',
     images: ['viva-app', 'viva-ai-friendly-robot-assistant'],
   },
   {
@@ -175,6 +178,7 @@ export const projects: Project[] = [
     built: 'Flutter',
     result: 'The rental journey, from browsing to getting in touch, fits in one mobile app.',
     live: '',
+    status: 'built',
     images: ['e-rent'],
   },
   {
@@ -188,10 +192,11 @@ export const projects: Project[] = [
     built: 'Angular, NgRx, Django, PostgreSQL',
     result: 'Training, tutors, entrepreneurs, resources and events sit in one platform, with a mobile version for learners on the go.',
     live: '',
+    status: 'built',
     images: ['tutorpreuneur-burundi-learning-platform'],
   },
   {
-    // CONFIRM: the outcome (harvest.bi was unreachable when I last checked)
+    // CONFIRM: the outcome
     slug: 'harvest',
     group: 'shipped',
     title: 'Harvest',
@@ -201,7 +206,8 @@ export const projects: Project[] = [
     did: 'Built the website in Astro around the market\'s brand.',
     built: 'Astro',
     result: 'Customers can find the market and what it sells online, on a fast, lightweight site.',
-    live: '', // harvest.bi was not answering on 19 Oct 2026: put 'https://harvest.bi' back once it is online
+    live: 'https://harvest.bi',
+    status: 'live',
     images: ['harvest'], // the logo, until there is a screenshot
   },
   // ---------------- Contributed ----------------
@@ -217,6 +223,7 @@ export const projects: Project[] = [
     built: 'The team\'s existing MAGIS platform',
     result: 'Members manage accounts, transfers, withdrawals, payments and savings clubs from a single app.',
     live: 'https://ihela.bi',
+    status: 'live',
     images: ['ihela', 'ihela-mobile'],
   },
   {
@@ -231,6 +238,7 @@ export const projects: Project[] = [
     built: 'The team\'s existing MAGIS stack',
     result: 'Staff work from one secure platform to manage their organisation\'s operations.',
     live: 'https://magis.bi',
+    status: 'live',
     images: ['magis'],
   },
 ];

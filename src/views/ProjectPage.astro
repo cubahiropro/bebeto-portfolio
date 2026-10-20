@@ -22,6 +22,7 @@ const answers: [string, string][] = [
   [project.group === 'shipped' ? t(lang, 'case.did') : t(lang, 'case.part'), project.did],
   [t(lang, 'case.built'), project.built],
   [t(lang, 'case.changed'), project.result],
+  [t(lang, 'case.status'), t(lang, `status.${project.status}` as any)],
 ];
 ---
 <Base title={project.title} description={project.tagline}>

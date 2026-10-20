@@ -34,7 +34,7 @@ export function GET() {
       '',
       'PROJECTS',
       ...getProjects(lang).map(
-        (p) => `- ${p.title} [${p.group}, ${p.category}]: ${p.tagline} For: ${p.forWho} What Bebeto did: ${p.did} Result: ${p.result}`,
+        (p) => `- ${p.title} [${p.group === 'shipped' ? 'built by Bebeto' : 'contributed to'}, ${p.category}, status: ${p.status === 'live' ? 'live online' : p.status === 'built' ? 'finished but not deployed yet' : 'Android app built but not published on a store yet'}]: ${p.tagline} For: ${p.forWho} What Bebeto did: ${p.did} Result: ${p.result}`,
       ),
       '',
       'MORE FACTS',

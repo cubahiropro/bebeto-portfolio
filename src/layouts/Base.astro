@@ -15,7 +15,26 @@ interface Props { title?: string; description?: string }
 const lang = langOf(Astro.url);
 const S = getSite(lang);
 const { title, description = S.bio } = Astro.props;
-const full = title ? `${title} — ${site.name}` : `${site.name} — ${S.role}`;
+const place = lang === 'fr' ? 'à Bujumbura' : 'in Bujumbura';
+const full = title ? `${title} — ${site.name}` : `${site.name} (${site.fullName}) — ${S.role} ${place}`;
+const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/fr/' || Astro.url.pathname === '/fr';
+const googleCheck = import.meta.env.PUBLIC_GOOGLE_VERIFICATION ?? '';
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  alternateName: [site.fullName, 'Brunel Bebeto'],
+  jobTitle: S.role,
+  description: S.bio,
+  url: new URL(lang === 'fr' ? '/fr/' : '/', Astro.site ?? Astro.url).href,
+  image: new URL('/og.jpg', Astro.site ?? Astro.url).href,
+  email: site.email,
+  address: { '@type': 'PostalAddress', addressLocality: 'Bujumbura', addressCountry: 'BI' },
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'University of Lac-Tanganyika' },
+  worksFor: { '@type': 'Organization', name: 'MAGIS Digital Solutions' },
+  knowsAbout: ['UI/UX design', 'Flutter', 'Astro', 'Angular', 'Django', 'PostgreSQL', 'Node.js'],
+  sameAs: site.socials.map((x) => x.href).filter((h) => !h.startsWith('https://wa.me')),
+};
 const here = Astro.url.pathname;
 const enHref = lang === 'en' ? here : otherLangPath('fr', here); // from a French page, strip /fr
 const abs = (p: string) => new URL(p, Astro.site ?? Astro.url).href;
@@ -32,6 +51,9 @@ const frHref = lang === 'fr' ? here : otherLangPath('en', here);
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    {googleCheck && <meta name="google-site-verification" content={googleCheck} />}
+    {isHome && <script type="application/ld+json" set:html={JSON.stringify(person)} />}
     <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_GB'} />
     <link rel="canonical" href={new URL(here, Astro.site ?? Astro.url).href} />
     <link rel="alternate" hreflang="en" href={abs(enHref)} />
